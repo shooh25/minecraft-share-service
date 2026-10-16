@@ -3,6 +3,7 @@
 import { useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import BuildGrid from "@/components/builds/BuildGrid";
+import Tag from "@/components/tags/Tag";
 import { mockBuilds, mockTags } from "@/lib/mock-data";
 
 function BuildsContent() {
@@ -51,27 +52,15 @@ function BuildsContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* タグフィルター */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          <button
-            onClick={() => setSelectedTag(null)}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition shrink-0 ${
-              selectedTag === null
-                ? "bg-zinc-950 text-white"
-                : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
-            }`}
-          >
-            すべて
+          <button onClick={() => setSelectedTag(null)}>
+            <Tag active={selectedTag === null}>すべて</Tag>
           </button>
           {mockTags.map((tag) => (
             <button
               key={tag.name}
               onClick={() => setSelectedTag(selectedTag === tag.name ? null : tag.name)}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition shrink-0 ${
-                selectedTag === tag.name
-                  ? "bg-zinc-950 text-white"
-                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
-              }`}
             >
-              #{tag.name}
+              <Tag active={selectedTag === tag.name}>#{tag.name}</Tag>
             </button>
           ))}
         </div>

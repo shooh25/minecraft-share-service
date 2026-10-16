@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Flame, Sparkles } from "lucide-react";
 import BuildGrid from "@/components/builds/BuildGrid";
+import Tag from "@/components/tags/Tag";
 import { mockBuilds, mockTags } from "@/lib/mock-data";
 
 export default function Home() {
@@ -22,19 +23,12 @@ export default function Home() {
 
         {/* 人気タグ */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <Link
-            href="/builds"
-            className="rounded-full bg-zinc-950 px-3.5 py-1.5 text-sm font-medium text-white shrink-0 hover:bg-zinc-800 transition"
-          >
-            すべて
+          <Link href="/builds">
+            <Tag active>すべて</Tag>
           </Link>
           {mockTags.map((tag) => (
-            <Link
-              key={tag.name}
-              href={`/tags/${encodeURIComponent(tag.name)}`}
-              className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-sm font-medium text-zinc-700 shrink-0 hover:bg-zinc-100 transition"
-            >
-              #{tag.name}
+            <Link key={tag.name} href={`/tags/${encodeURIComponent(tag.name)}`}>
+              <Tag>#{tag.name}</Tag>
             </Link>
           ))}
         </div>
