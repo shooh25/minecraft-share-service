@@ -6,7 +6,7 @@
 
 ### 採用技術
 - **Frontend / Application**: Next.js App Router (TypeScript, Tailwind CSS)
-- **Authentication**: Supabase Auth (X / Twitter OAuth 2.0 のみ)
+- **Authentication**: Supabase Auth (Google OAuth 2.0 のみ)
 - **Database**: Supabase PostgreSQL
 - **Object Storage**: Cloudflare R2 (S3互換API)
 - **Hosting**: Vercel
@@ -17,7 +17,7 @@
    │
    ├── (1) ページ表示 / 操作 ─────────► [Next.js (Vercel)]
    │                                        │
-   │                                        ├── (2) 認証・セッション管理 ──► [Supabase Auth (X OAuth)]
+   │                                        ├── (2) 認証・セッション管理 ──► [Supabase Auth (Google OAuth)]
    │                                        │
    │                                        ├── (3) データ読み書き/RLS ───► [Supabase PostgreSQL]
    │                                        │
@@ -31,29 +31,34 @@
 ## 2. Authentication & Authorization
 
 ### 2.1 認証プロバイダー
-- **X (Twitter) OAuth 2.0 のみに限定**する。
+- **Google OAuth 2.0 (OIDC) のみに限定**する。スコープは `openid profile` のみ（`email` は要求しない）。
 - ユーザー識別子は Supabase Auth の `UID` (UUID) を主キーとする。
-- Xから取得した情報（ユーザー名 `@handle`、表示名、アバター画像URL）は、初回ログイン時に `profiles` テーブルへ自動同期する。
+- 保存するユーザーデータは 内部UUID・GoogleアカウントID（`sub`）・ニックネーム のみ。IP・UA・行動ログ・プロバイダートークンも保存しない。
+  - Googleの表示名・アバターURL・ロケール・メールアドレスは、`auth.users` / `auth.identities` の INSERT / UPDATE 時にメタデータを `sub` のホワイトリストに絞る **DBトリガー**（マイグレーションで管理）で削除する。
+- アプリ上の表示名はユーザー入力の**ニックネーム**（重複可）。`profiles` は `id`（FK → auth.users, ON DELETE CASCADE）+ `nickname`（NOT NULL）のみ。
+  - ニックネーム未設定のユーザーは、設定後に投稿・いいね・コメントを解禁する。
+- ユーザーページのURLは `/users/{id}`（内部UUID）とし、ニックネームはURLに含めない。
 
 ### 2.2 Next.js App Router との統合
-- `@supabase/ssr` パッケージを用いた PKCE (Proof Key for Code Exchange) フローを採用。
+- `@supabase/ssr` で PKCE (Proof Key for Code Exchange) フローを採用。
 - コールバックエンドポイント（`app/auth/callback/route.ts`）で認可コードをセッションと交換し、Cookieにセッション情報を保持する。
-- Server Components / Server Actions では `auth.getUser()` によりセッションと本人性を検証する。
+- Server Components / Server Actions では `auth.getUser()` により本人性を検証する。
 
 ### 2.3 認可・アクセス制御
 - PostgreSQLの **Row Level Security (RLS)** を全テーブルで有効化。
-- 投稿・いいね・コメントの作成・更新・削除は、セッションの `auth.uid()` とレコード所有者の一致をDBレベルで強制する。
+- `profiles` は本人（`auth.uid() = id`）のみ SELECT / UPDATE 可能（表示は作品JOINにより行う）。
+- 投稿・いいね・コメントの書き込みは、セッションの `auth.uid()` とレコード所有者の一致をDBレベルで強制する。
+- 退会は `auth.users` の削除で行い、`ON DELETE CASCADE` で profiles / posts / comments / likes を完全削除。R2上の該当画像はサーバー側で削除（3.5節）。
 
 ---
 
 ## 3. Data Flow
 
-### 3.1 認証フロー (X OAuth)
-1. ユーザーが「Xでログイン」を実行。
-2. Supabase Auth (`signInWithOAuth({ provider: 'twitter' })`) によりXの認可画面へ遷移。
-3. 連携承認後、`/auth/callback?code=...` へリダイレクト。
-4. サーバー側（Route Handler）でコードをセッションと交換し、Cookieを設定。
-5. 初回認証時は `profiles` レコードを自動作成・更新後、遷移先へリダイレクト。
+### 3.1 認証フロー (Google OAuth)
+1. 「Googleでログイン」より Supabase Auth で Googleの認可画面へ遷移。
+2. 連携承認後、`/auth/callback?code=...` でコードをセッションと交換し、Cookieを設定。
+3. 初回ログイン時はホワイトリストトリガーが `sub` 以外のユーザー情報を削除した上で `profiles` レコードを自動作成する。
+4. ニックネーム未設定の場合はニックネーム設定画面へ誘導し、設定後に遷移先へリダイレクト。
 
 ### 3.2 投稿・画像アップロードフロー
 1. ユーザーが投稿情報（タイトル、説明、タグ等）と画像ファイルを選択。
