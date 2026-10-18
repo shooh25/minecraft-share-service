@@ -28,7 +28,6 @@ export const mockBuilds: Build[] = [
   {
     id: "build-1",
     slug: "fantasy-water-castle",
-    title: "湖上に浮かぶ天空城と水上都市",
     description: "サバイバルで3ヶ月かけて建築した湖上の城です。夜景のライティングにこだわりました。",
     images: [
       "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
@@ -44,7 +43,6 @@ export const mockBuilds: Build[] = [
   {
     id: "build-2",
     slug: "japanese-traditional-temple",
-    title: "紅葉に囲まれた五重塔と枯山水",
     description: "和風ブロックを中心に使用した寺院建築です。庭園の配置に工夫を凝らしました。",
     images: [
       "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&auto=format&fit=crop&q=80",
@@ -59,7 +57,6 @@ export const mockBuilds: Build[] = [
   {
     id: "build-3",
     slug: "modern-minimalist-villa",
-    title: "海辺のモダンガラスヴィラ",
     description: "白のコンクリートと板ガラスを基調としたミニマルな高級別荘です。",
     images: [
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80",
@@ -74,7 +71,6 @@ export const mockBuilds: Build[] = [
   {
     id: "build-4",
     slug: "steampunk-airship-dock",
-    title: "スチームパンク飛空艇ドック",
     description: "真鍮と銅のブロックを多用したレトロフューチャーな飛行船発着場です。",
     images: [
       "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80",
@@ -89,7 +85,6 @@ export const mockBuilds: Build[] = [
   {
     id: "build-5",
     slug: "cozy-forest-cabin",
-    title: "トウヒの森の小さな山小屋",
     description: "サバイバル序盤にも作れるアットホームなログハウス。煙突から煙が出ます。",
     images: [
       "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=80",
@@ -104,7 +99,6 @@ export const mockBuilds: Build[] = [
   {
     id: "build-6",
     slug: "cyberpunk-neon-district",
-    title: "サイバーパンク地下街",
     description: "エンドロッドと色付きガラスを大量に配置した近未来のネオン街路です。",
     images: [
       "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80",

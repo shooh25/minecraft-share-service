@@ -9,7 +9,6 @@ export interface User {
 export interface Build {
   id: string;
   slug: string;
-  title: string;
   description: string;
   images: string[];
   author: User;

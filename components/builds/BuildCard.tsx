@@ -14,14 +14,14 @@ export default function BuildCard({ build }: BuildCardProps) {
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-zinc-100">
         <Image
           src={build.images[0]}
-          alt={build.title}
+          alt={build.description}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
           className="object-cover transition duration-200 group-hover:scale-102"
         />
       </div>
 
-      {/* 作品情報（作者・タイトル・いいね数） */}
+      {/* 作品情報（作者・説明・いいね数） */}
       <div className="flex items-center justify-between gap-2 px-1 py-2.5">
         <div className="flex min-w-0 items-center gap-2">
           <Image
@@ -32,8 +32,8 @@ export default function BuildCard({ build }: BuildCardProps) {
             className="h-6 w-6 rounded-full object-cover shrink-0"
           />
           <div className="truncate">
-            <span className="block truncate text-sm font-medium text-zinc-900">
-              {build.title}
+            <span className="block truncate text-sm text-zinc-900">
+              {build.description}
             </span>
           </div>
         </div>
