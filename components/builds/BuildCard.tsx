@@ -32,13 +32,13 @@ export default function BuildCard({ build }: BuildCardProps) {
             className="h-6 w-6 rounded-full object-cover shrink-0"
           />
           <div className="truncate">
-            <span className="block truncate text-sm text-zinc-900">
+            <span className="block truncate text-sm font-bold text-zinc-900">
               {build.description}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-sm font-medium text-zinc-500 shrink-0">
+        <div className="flex items-center gap-1 text-sm text-zinc-500 shrink-0">
           <Heart className="h-3.5 w-3.5 text-zinc-400 group-hover:text-rose-500 group-hover:fill-rose-500 transition-colors" />
           <span>{build.likesCount}</span>
         </div>

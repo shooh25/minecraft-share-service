@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Flame, Sparkles } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
 import { mockBuilds, mockTags } from "@/lib/mock-data";
@@ -9,66 +9,45 @@ export default function Home() {
   const recentBuilds = mockBuilds.filter((b) => !b.featured);
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 lg:px-6 py-6 sm:py-8 space-y-10">
-      {/* メインビジュアル */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-950">
-            建築作品を探す
-          </h1>
-          <p className="mt-1 text-sm sm:text-base text-zinc-500">
-            人気のMinecraft建築作品やワークスペースを探索しよう
-          </p>
-        </div>
-
-        {/* 人気タグ */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <Link href="/builds">
-            <Tag active>すべて</Tag>
+    <div className="mx-auto max-w-[1600px] px-4 lg:px-6 py-6 sm:py-6 space-y-6 sm:space-y-8">
+      {/* 人気タグ */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {mockTags.map((tag) => (
+          <Link key={tag.name} href={`/builds?tag=${encodeURIComponent(tag.name)}`}>
+            <Tag>#{tag.name}</Tag>
           </Link>
-          {mockTags.map((tag) => (
-            <Link key={tag.name} href={`/tags/${encodeURIComponent(tag.name)}`}>
-              <Tag>#{tag.name}</Tag>
-            </Link>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* 注目作品 */}
-      <section className="space-y-3">
+      <section className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Flame className="h-4 w-4 text-amber-500" />
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900">
-              注目の建築
-            </h2>
-          </div>
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900">
+            注目の作品
+          </h2>
           <Link
             href="/builds?sort=popular"
             className="flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition"
           >
             もっと見る
-            <ArrowRight className="h-3 w-3" />
+            <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
         <BuildGrid builds={featuredBuilds} />
       </section>
 
       {/* 新着作品 */}
-      <section className="space-y-3">
+      <section className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-indigo-500" />
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900">
-              新着作品
-            </h2>
-          </div>
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900">
+            新着作品
+          </h2>
           <Link
             href="/builds?sort=recent"
             className="flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition"
           >
-            すべて見る
-            <ArrowRight className="h-3 w-3" />
+            もっと見る
+            <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
         <BuildGrid builds={recentBuilds} />
