@@ -149,7 +149,7 @@ export const mockBuilds: Build[] = [
       "https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&auto=format&fit=crop&q=80",
     ],
     author: mockUsers.steve,
-    tags: ["民家", "サバイバル", "小型建築"],
+    tags: ["民家", "サバイバル", "小型建築", "アドバイス求む!"],
     likesCount: 254,
     commentsCount: 18,
     createdAt: "2026-10-18",
@@ -233,7 +233,7 @@ export const mockBuilds: Build[] = [
       "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format&fit=crop&q=80",
     ],
     author: mockUsers.alex,
-    tags: ["内装", "モダン", "民家"],
+    tags: ["内装", "モダン", "民家", "アドバイス求む!"],
     likesCount: 118,
     commentsCount: 6,
     createdAt: "2026-10-16",
@@ -276,4 +276,5 @@ export const mockTags: Tag[] = [
   { name: "クリエイティブ", count: 14 },
   { name: "レッドストーン", count: 12 },
   { name: "氷雪建築", count: 9 },
+  { name: "アドバイス求む!", count: 7 },
 ];

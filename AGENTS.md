@@ -15,7 +15,7 @@
 - Do not introduce new dependencies without justification.
 - Do not implement features outside the agreed scope.
 - Run lint, type checks, and relevant tests after changes.
-- Update documentation when behavior or schema changes.
+- Update documentation when behavior or schema changes. Documentation states only the current spec; do not record past states or decision history.
 
 ## Security
 - Never commit secrets or credentials.
