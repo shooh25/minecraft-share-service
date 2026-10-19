@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
 import type { Build } from "@/types";
+import { filterBuilds, parseFilters, sortBuilds } from "@/lib/build-filters";
 import { mockBuilds, mockTags } from "@/lib/mock-data";
 
 // 人気順 / 新着順の選択肢
@@ -18,9 +19,7 @@ function BuildsContent() {
   const router = useRouter();
 
   // クエリパラメータを取得する(sort / tag / q)
-  const sortBy = searchParams.get("sort") === "recent" ? "recent" : "popular";
-  const selectedTag = searchParams.get("tag");
-  const query = searchParams.get("q") ?? "";
+  const { sortBy, tag: selectedTag, query } = parseFilters(searchParams);
  
   // 条件が変わったら、最初から表示し直す
   const filterKey = `${sortBy}|${selectedTag ?? ""}|${query}`;
@@ -44,24 +43,10 @@ function BuildsContent() {
   };
 
   // 条件に合う作品だけにして、並び替えて返す
-  const filteredBuilds = useMemo(() => {
-    const searchWord = query.toLowerCase();
-    return mockBuilds
-      .filter(
-        (b) =>
-          (!selectedTag || b.tags.includes(selectedTag)) &&
-          (!searchWord ||
-            b.description.toLowerCase().includes(searchWord) ||
-            b.tags.some((t) => t.toLowerCase().includes(searchWord)) ||
-            b.author.displayName.toLowerCase().includes(searchWord) ||
-            b.author.username.toLowerCase().includes(searchWord)),
-      )
-      .sort(
-        sortBy === "popular"
-          ? (a, b) => b.likesCount - a.likesCount
-          : (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-  }, [selectedTag, query, sortBy]);
+  const filteredBuilds = useMemo(
+    () => sortBuilds(filterBuilds(mockBuilds, { tag: selectedTag, query }), sortBy),
+    [selectedTag, query, sortBy],
+  );
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 lg:px-6 py-6 sm:py-6 space-y-6">
