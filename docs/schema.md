@@ -40,4 +40,5 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | post_tags | 全員 | 本人の投稿に対してのみ | 未使用（CASCADE） |
 
 - INSERT は「認証済みかつ ニックネーム設定済み」ユーザーのみ（RLS で profiles JOIN 判定）。
+- テーブル権限は各マイグレーションで明示的に GRANT する。
 - posts / comments / likes の詳細カラムは実装時に追記する。
