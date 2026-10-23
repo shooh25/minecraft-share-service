@@ -32,7 +32,7 @@ export default function GoogleLoginButton() {
         type="button"
         onClick={handleLogin}
         disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm sm:text-base font-medium text-zinc-900 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm sm:text-base font-medium text-zinc-900 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <svg viewBox="0 0 48 48" aria-hidden="true" className="h-5 w-5">
           <path

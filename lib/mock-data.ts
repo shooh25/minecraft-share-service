@@ -256,6 +256,7 @@ export const mockBuilds: Build[] = [
 ];
 
 export const mockTags: Tag[] = [
+  { name: "アドバイス求む!", count: 7 },
   { name: "城", count: 124 },
   { name: "和風", count: 98 },
   { name: "モダン", count: 85 },
@@ -276,5 +277,4 @@ export const mockTags: Tag[] = [
   { name: "クリエイティブ", count: 14 },
   { name: "レッドストーン", count: 12 },
   { name: "氷雪建築", count: 9 },
-  { name: "アドバイス求む!", count: 7 },
 ];

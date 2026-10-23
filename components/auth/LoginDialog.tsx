@@ -74,14 +74,14 @@ export default function LoginDialog({ open, error, onClose }: LoginDialogProps) 
         aria-modal="true"
         aria-labelledby="login-dialog-title"
         aria-describedby="login-dialog-description"
-        className="relative w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-8 text-center shadow-xl"
+        className="relative w-full max-w-sm rounded-md border border-zinc-200 bg-white p-8 text-center shadow-xl"
       >
         <button
           ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="閉じる"
-          className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900"
+          className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900"
         >
           <X className="h-4 w-4" />
         </button>

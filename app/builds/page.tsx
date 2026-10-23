@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
-import type { Build } from "@/types";
 import { filterBuilds, parseFilters, sortBuilds } from "@/lib/build-filters";
 import { mockBuilds, mockTags } from "@/lib/mock-data";
 
@@ -21,9 +20,6 @@ function BuildsContent() {
   // クエリパラメータを取得する(sort / tag / q)
   const { sortBy, tag: selectedTag, query } = parseFilters(searchParams);
  
-  // 条件が変わったら、最初から表示し直す
-  const filterKey = `${sortBy}|${selectedTag ?? ""}|${query}`;
-
   // 書き換えたパラメータをURLに反映する
   const syncUrl = (params: URLSearchParams) => {
     const qs = params.toString();
@@ -49,7 +45,7 @@ function BuildsContent() {
   );
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 lg:px-6 py-6 sm:py-6 space-y-6">
+    <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-10">
         {/* タグフィルター */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
@@ -61,14 +57,14 @@ function BuildsContent() {
         </div>
 
         {/* 並び替えスイッチ */}
-        <div className="flex items-center gap-1 p-0.5 self-end sm:self-auto shrink-0">
+        <div className="flex items-center p-0.5 self-end sm:self-auto shrink-0">
           {SORT_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => handleSortChange(value)}
-              className={`rounded-full px-4 py-2 text-sm sm:text-base font-medium transition ${
+              className={`rounded-md px-4 py-2 text-sm sm:text-base font-medium transition ${
                 sortBy === value
-                  ? "bg-zinc-100 text-zinc-950"
+                  ? "text-zinc-950"
                   : "text-zinc-500 hover:text-zinc-950"
               }`}
             >
@@ -78,37 +74,12 @@ function BuildsContent() {
         </div>
       </div>
 
-      {/* 作品グリッド */}
-      <PagedGrid key={filterKey} builds={filteredBuilds} />
-    </div>
-  );
-}
-
-/** 10件ずつ表示して、残りは「さらに読み込む」ボタンで追加していく */
-function PagedGrid({ builds }: { builds: Build[] }) {
-  const [visibleCount, setVisibleCount] = useState(10);
-  const displayedBuilds = builds.slice(0, visibleCount);
-  const hasMore = visibleCount < builds.length;
-
-  return (
-    <>
+      {/* 作品グリッド(該当ゼロのときはBuildGridが案内文を出す) */}
       <BuildGrid
-        builds={displayedBuilds}
+        builds={filteredBuilds}
         emptyMessage="該当する建築作品が見つかりませんでした。"
       />
-
-      {/* 追加読み込みボタン */}
-      {hasMore && (
-        <div className="pt-8 text-center">
-          <button
-            onClick={() => setVisibleCount((prev) => prev + 10)}
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-6 py-2 text-sm sm:text-base font-medium text-zinc-800 hover:bg-zinc-50 transition"
-          >
-            さらに読み込む
-          </button>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
 

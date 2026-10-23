@@ -1,46 +1,62 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart } from "lucide-react";
+import { Heart, MessageCircleQuestion } from "lucide-react";
 import { Build } from "@/types";
 
 interface BuildCardProps {
   build: Build;
 }
 
+const ADVICE_TAG = "アドバイス求む!";
+
 export default function BuildCard({ build }: BuildCardProps) {
   return (
-    <Link href={`/builds/${build.slug}`} className="group block">
+    <Link href={`/builds/${build.slug}`} className="group block bg-white rounded-md">
       {/* 建築画像 */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-zinc-100">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-white">
         <Image
           src={build.images[0]}
           alt={build.description}
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+          sizes="(max-width: 768px) 50vw, 33vw"
           className="object-cover transition duration-200 group-hover:scale-102"
         />
+
+        {/* アドバイス求む!付きの作品は、画像の左上に目印を出す */}
+        {build.tags.includes(ADVICE_TAG) && (
+          <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 text-xs font-bold text-zinc-950 shadow-sm">
+            <MessageCircleQuestion className="h-3.5 w-3.5" />
+            アドバイス求む!
+          </div>
+        )}
       </div>
 
-      {/* 作品情報（作者・説明・いいね数） */}
-      <div className="flex items-center justify-between gap-2 px-1 py-2.5">
-        <div className="flex min-w-0 items-center gap-2">
-          <Image
-            src={build.author.avatarUrl}
-            alt={build.author.displayName}
-            width={24}
-            height={24}
-            className="h-6 w-6 rounded-full object-cover shrink-0"
-          />
-          <div className="truncate">
-            <span className="block truncate text-sm font-bold text-zinc-900">
-              {build.description}
+      {/* 作品情報(1段目: 説明 / 2段目: 作者・いいね) */}
+      <div className="px-4 py-3 space-y-1">
+        {/* 1段目: 説明 */}
+        <span className="block truncate text-sm font-bold text-zinc-900">
+          {build.description}
+        </span>
+
+        {/* 2段目: 左に作者・右にいいね */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Image
+              src={build.author.avatarUrl}
+              alt={build.author.displayName}
+              width={24}
+              height={24}
+              className="h-6 w-6 rounded-full object-cover shrink-0"
+            />
+            <span className="truncate text-sm text-zinc-700">
+              {build.author.displayName}
             </span>
           </div>
-        </div>
 
-        <div className="flex items-center gap-1 text-sm text-zinc-500 shrink-0">
-          <Heart className="h-3.5 w-3.5 text-zinc-400 group-hover:text-rose-500 group-hover:fill-rose-500 transition-colors" />
-          <span>{build.likesCount}</span>
+          <div className="flex items-center gap-1 text-sm text-zinc-500 shrink-0">
+            <Heart className="h-3.5 w-3.5 text-zinc-400 group-hover:text-rose-500 group-hover:fill-rose-500 transition-colors" />
+            <span>{build.likesCount}</span>
+          </div>
         </div>
       </div>
     </Link>

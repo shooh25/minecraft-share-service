@@ -9,9 +9,9 @@ export default function Home() {
   const recentBuilds = mockBuilds.filter((b) => !b.featured);
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 lg:px-6 py-6 sm:py-6 space-y-6 sm:space-y-8">
+    <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6 sm:space-y-8">
       {/* 人気タグ */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
         {mockTags.map((tag) => (
           <Link key={tag.name} href={`/builds?tag=${encodeURIComponent(tag.name)}`}>
             <Tag>#{tag.name}</Tag>
