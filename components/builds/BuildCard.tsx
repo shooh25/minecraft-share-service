@@ -61,7 +61,7 @@ export default function BuildCard({ build }: BuildCardProps) {
           </div>
 
           <div className="flex items-center gap-1 text-sm text-zinc-500 shrink-0">
-            <Heart className="h-3.5 w-3.5 text-zinc-400 group-hover:text-rose-500 group-hover:fill-rose-500 transition-colors" />
+            <Heart className="h-3.5 w-3.5 text-zinc-400" />
             <span>{build.likesCount}</span>
           </div>
         </div>
