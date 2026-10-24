@@ -1,4 +1,4 @@
-import { Build, Tag, User } from "@/types";
+import { Build, User } from "@/types";
 
 export const mockUsers: Record<string, User> = {
   alex: {
@@ -253,28 +253,4 @@ export const mockBuilds: Build[] = [
     createdAt: "2026-10-17",
     featured: false,
   },
-];
-
-export const mockTags: Tag[] = [
-  { name: "アドバイス求む!", count: 7 },
-  { name: "城", count: 124 },
-  { name: "和風", count: 98 },
-  { name: "モダン", count: 85 },
-  { name: "サバイバル", count: 72 },
-  { name: "ファンタジー", count: 64 },
-  { name: "民家", count: 53 },
-  { name: "庭園", count: 39 },
-  { name: "内装", count: 34 },
-  { name: "大規模建築", count: 61 },
-  { name: "小型建築", count: 48 },
-  { name: "寺院", count: 31 },
-  { name: "別荘", count: 29 },
-  { name: "近未来", count: 27 },
-  { name: "街並み", count: 24 },
-  { name: "夜景", count: 21 },
-  { name: "スチームパンク", count: 18 },
-  { name: "乗り物", count: 16 },
-  { name: "クリエイティブ", count: 14 },
-  { name: "レッドストーン", count: 12 },
-  { name: "氷雪建築", count: 9 },
 ];

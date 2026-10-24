@@ -2,18 +2,22 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
-import { mockBuilds, mockTags } from "@/lib/mock-data";
+import { fetchTags } from "@/lib/tags";
+import { mockBuilds } from "@/lib/mock-data";
 
-export default function Home() {
+export const instant = false;
+
+export default async function Home() {
+  const tags = await fetchTags();
   const featuredBuilds = mockBuilds.filter((b) => b.featured);
   const recentBuilds = mockBuilds.filter((b) => !b.featured);
 
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6 sm:space-y-8">
-      {/* 人気タグ */}
+      {/* タグ */}
       <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-        {mockTags.map((tag) => (
-          <Link key={tag.name} href={`/builds?tag=${encodeURIComponent(tag.name)}`}>
+        {tags.map((tag) => (
+          <Link key={tag.id} href={`/builds?tag=${encodeURIComponent(tag.name)}`}>
             <Tag>#{tag.name}</Tag>
           </Link>
         ))}
