@@ -33,9 +33,10 @@
 ### 2.1 認証プロバイダー
 - **Google OAuth 2.0 (OIDC) のみに限定**する。スコープは `openid profile` のみ（`email` は要求しない）。
 - ユーザー識別子は Supabase Auth の `UID` (UUID) を主キーとする。
-- 保存するユーザーデータは 内部UUID・GoogleアカウントID（`sub`）・ニックネーム のみ。IP・UA・行動ログ・プロバイダートークンも保存しない。
+- 保存するユーザーデータは 内部UUID・GoogleアカウントID（`sub`）・ニックネーム・アバター画像 のみ。IP・UA・行動ログ・プロバイダートークンも保存しない。
   - Googleの表示名・アバターURL・ロケール・メールアドレスは、`auth.users` / `auth.identities` の INSERT / UPDATE 時にメタデータを `sub` のホワイトリストに絞る **DBトリガー**（マイグレーションで管理）で削除する。
-- アプリ上の表示名はユーザー入力の**ニックネーム**（重複可）。`profiles` は `id`（FK → auth.users, ON DELETE CASCADE）+ `nickname`（NOT NULL）のみ。
+- アプリ上の表示名はユーザー入力の**ニックネーム**（重複可）。`profiles` は `id`（FK → auth.users, ON DELETE CASCADE）+ `nickname`（NOT NULL）+ `avatar_key`（NULL 可）のみ。
+  - アバターは外部URLを保存せず、R2 のオブジェクトキー（`avatars/{userId}/{uuid}.{ext}`）を保持する。未設定は NULL とし、表示側でアイコンにフォールバックする。
   - ニックネーム未設定のユーザーは、設定後に投稿・いいね・コメントを解禁する。
 - ユーザーページのURLは `/users/{id}`（内部UUID）とし、ニックネームはURLに含めない。
 
@@ -46,7 +47,7 @@
 
 ### 2.3 認可・アクセス制御
 - PostgreSQLの **Row Level Security (RLS)** を全テーブルで有効化。
-- `profiles` は本人（`auth.uid() = id`）のみ SELECT / UPDATE 可能（表示は作品JOINにより行う）。
+- `profiles` は SELECT を全員に開放し（作品一覧・作品詳細で作者名を表示するため）、UPDATE は本人（`auth.uid() = id`）のみ。更新できる列は `nickname` / `avatar_key` に限定する。
 - 投稿・いいね・コメントの書き込みは、セッションの `auth.uid()` とレコード所有者の一致をDBレベルで強制する。
 - 退会は `auth.users` の削除で行い、`ON DELETE CASCADE` で profiles / posts / comments / likes を完全削除。R2上の該当画像はサーバー側で削除（3.5節）。
 
@@ -87,7 +88,8 @@
 ## 4. Image Storage (Cloudflare R2)
 
 - **保存方式**: 画像本体は Cloudflare R2 に保存し、DBにはオブジェクトキーとメタデータのみを保持。
-- **オブジェクトキー規約**: `posts/{userId}/{uuid}.{ext}`（ユーザー入力ファイル名は使用しない）。
+- **オブジェクトキー規約**: 投稿画像は `posts/{userId}/{uuid}.{ext}`、アバターは `avatars/{userId}/{uuid}.{ext}`（ユーザー入力ファイル名は使用しない）。
+- **参照方法**: DBにはキーのみを保存し、配信URLはアプリ側で組み立てる。
 - **制限事項**:
   - 許容形式: JPEG, PNG, WebP
   - 許容サイズ: 1ファイルあたり最大 10MB

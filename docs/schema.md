@@ -2,7 +2,7 @@
 
 ## 方針
 
-保存するユーザーデータは **内部UUID・GoogleアカウントID（`sub`）・ニックネーム** のみ。
+保存するユーザーデータは **内部UUID・GoogleアカウントID（`sub`）・ニックネーム・アバター画像** のみ。
 
 ## 認証ユーザー（auth.users / auth.identities）
 
@@ -15,9 +15,12 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 |---|---|---|
 | id | uuid | FK → auth.users.id, ON DELETE CASCADE |
 | nickname | text | NOT NULL。ユーザー入力の表示名。**重複可** |
+| avatar_key | text | NULL 可。R2のオブジェクトキー。未設定は NULL（空文字は不可） |
 
 - 初回ログイン時にトリガーで自動作成する（nickname は空文字で作成し、設定画面で UPDATE する）
-- SELECT は全員に開放する（作品一覧・作品詳細で作者名を表示するため）。UPDATE は本人のみ
+- SELECT は全員に開放する（作品一覧・作品詳細で作者名・アバターを表示するため）。UPDATE は本人のみ
+- ユーザーが UPDATE できる列は `nickname` と `avatar_key` に限定する
+- アバターは外部URLではなく R2 のオブジェクトキーで保持し、配信URLはアプリ側で組み立てる
 
 
 ## posts
@@ -72,7 +75,7 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 
 | テーブル | SELECT | INSERT | UPDATE / DELETE |
 |---|---|---|---|
-| profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人 / DELETE なし |
+| profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人（`nickname` / `avatar_key` の列単位）/ DELETE なし |
 | posts | 全員 | 認証済み かつ ニックネーム設定済み | DELETE 本人（UPDATE なし） |
 | post_tags | 全員 | 自分の作品に対してのみ | DELETE 自分の作品に対してのみ（UPDATE なし） |
 | likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
