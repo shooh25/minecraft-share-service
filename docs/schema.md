@@ -16,18 +16,25 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | id | uuid | FK → auth.users.id, ON DELETE CASCADE |
 | nickname | text | NOT NULL。ユーザー入力の表示名。**重複可** |
 
+- 初回ログイン時にトリガーで自動作成する（nickname は空文字で作成し、設定画面で UPDATE する）
+- SELECT は全員に開放する（作品一覧・作品詳細で作者名を表示するため）。UPDATE は本人のみ
+
 
 ## posts
 
 | カラム | 型 | 説明 |
 |---|---|---|
-| id | uuid | PK, 自動生成 |
-| author_id | uuid | FK → auth.users.id, ON DELETE CASCADE。投稿者 |
-| slug | text | NOT NULL UNIQUE。URL `/builds/{slug}` に使用 |
-| description | text | NOT NULL。作品説明 |
-| images | jsonb | NOT NULL。画像URLの配列(実体は Cloudflare R2) |
-| likes_count | integer | NOT NULL, 初期 0。人気順の並び替えに使用 |
+| id | uuid | PK, 自動生成。URL `/builds/{id}` に使用 |
+| author_id | uuid | FK → profiles.id, ON DELETE CASCADE。投稿者 |
+| description | text | NOT NULL。作品説明(1〜1000文字、空白のみ不可)。タイトルは持たない |
+| images | text[] | NOT NULL。R2のオブジェクトキーを1〜5件。配列順が表示順 |
+| likes_count | integer | NOT NULL, 初期 0, 非負。人気順の並び替えに使用 |
 | created_at | timestamptz | NOT NULL, 初期 now()。新着順の並び替えに使用 |
+| updated_at | timestamptz | NOT NULL, 初期 now()。UPDATE 時にトリガーで更新 |
+
+- インデックス: `(created_at desc, id desc)` / `(likes_count desc, created_at desc, id desc)` / `(author_id, created_at desc, id desc)`
+- 投稿後のユーザーによる編集は不可（UPDATE ポリシーなし）。変更できるのは service_role のみ
+- 画像の件数制約は `cardinality(images)` で判定する（空配列は `array_length` だと NULL になるため）
 
 ## tags
 
@@ -49,16 +56,27 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 - `post_tags(tag_id)` にインデックス（タグ → 作品一覧の検索用）
 - タグの件数（count）は保存せず、`post_tags` の GROUP BY で都度集計
 
+## likes
+
+| カラム | 型 | 説明 |
+|---|---|---|
+| post_id | uuid | FK → posts.id, ON DELETE CASCADE / 主キーは (post_id, user_id) の組 |
+| user_id | uuid | FK → profiles.id, ON DELETE CASCADE |
+| created_at | timestamptz | NOT NULL, 初期 now() |
+
+- 主キーが2列の組のため、**同一ユーザーが同じ作品に複数回いいねできない**
+- `likes(user_id)` にインデックス（退会時の CASCADE・自分がいいねした作品の取得用）
+- `posts.likes_count` は likes の INSERT / DELETE トリガーで加減算する（DB内で加算するため同時実行でもずれない）
+
 ## RLS ポリシー（要約）
 
 | テーブル | SELECT | INSERT | UPDATE / DELETE |
 |---|---|---|---|
-| profiles | 本人（auth.uid() = id） | 未使用（トリガーで自動作成） | 本人 |
-| posts | 全員 | 認証済み | 本人 |
-| comments | 全員 | 認証済み | 本人・作品作者・管理者 |
-| likes | 全員 | 認証済み（UNIQUE(user_id, post_id) で多重防止） | 本人 |
+| profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人 / DELETE なし |
+| posts | 全員 | 認証済み かつ ニックネーム設定済み | DELETE 本人（UPDATE なし） |
+| post_tags | 全員 | 自分の作品に対してのみ | DELETE 自分の作品に対してのみ（UPDATE なし） |
+| likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
 | tags | 全員 | なし（追加は運営側が service_role で行う） | 未使用 |
-| post_tags | 全員 | 本人の投稿に対してのみ | 未使用（CASCADE） |
 
-- INSERT は「認証済みかつ ニックネーム設定済み」ユーザーのみ（RLS で profiles JOIN 判定）。
-- テーブル権限は各マイグレーションで明示的に GRANT する。
+- 投稿・タグ付け・いいねの INSERT は `auth.uid()` と所有者の一致を条件にする。
+- テーブル権限は各マイグレーションで明示的に GRANT / REVOKE する。
