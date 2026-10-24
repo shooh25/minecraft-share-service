@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
 import { filterBuilds, parseFilters, sortBuilds } from "@/lib/build-filters";
-import { mockBuilds } from "@/lib/mock-data";
-import type { Tag as TagItem } from "@/types";
+import type { Build, Tag as TagItem } from "@/types";
 
 interface BuildsContentProps {
   // タグの一覧
   tags: TagItem[];
+  // DBから取得した作品の一覧
+  builds: Build[];
 }
 
 // 人気順 / 新着順の選択肢
@@ -19,7 +20,7 @@ const SORT_OPTIONS = [
   { value: "recent", label: "新着順" },
 ] as const;
 
-export default function BuildsContent({ tags }: BuildsContentProps) {
+export default function BuildsContent({ tags, builds }: BuildsContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -46,8 +47,8 @@ export default function BuildsContent({ tags }: BuildsContentProps) {
 
   // 条件に合う作品だけにして、並び替えて返す
   const filteredBuilds = useMemo(
-    () => sortBuilds(filterBuilds(mockBuilds, { tag: selectedTag, query }), sortBy),
-    [selectedTag, query, sortBy],
+    () => sortBuilds(filterBuilds(builds, { tag: selectedTag, query }), sortBy),
+    [builds, selectedTag, query, sortBy],
   );
 
   return (

@@ -3,14 +3,15 @@ import { ChevronRight } from "lucide-react";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
 import { fetchTags } from "@/lib/tags";
-import { mockBuilds } from "@/lib/mock-data";
+import { fetchBuilds } from "@/lib/posts";
+import { sortBuilds } from "@/lib/build-filters";
 
 export const instant = false;
 
 export default async function Home() {
-  const tags = await fetchTags();
-  const featuredBuilds = mockBuilds.filter((b) => b.featured);
-  const recentBuilds = mockBuilds.filter((b) => !b.featured);
+  const [tags, builds] = await Promise.all([fetchTags(), fetchBuilds()]);
+  const featuredBuilds = sortBuilds(builds, "popular").slice(0, 8);
+  const recentBuilds = sortBuilds(builds, "recent").slice(0, 8);
 
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6 sm:space-y-8">

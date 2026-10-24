@@ -8,7 +8,6 @@ export interface User {
 
 export interface Build {
   id: string;
-  slug: string;
   description: string;
   images: string[];
   author: User;
@@ -16,7 +15,6 @@ export interface Build {
   likesCount: number;
   commentsCount: number;
   createdAt: string;
-  featured?: boolean;
 }
 
 export interface Tag {

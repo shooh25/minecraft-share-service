@@ -6,7 +6,6 @@ import { filterBuilds, parseFilters, sortBuilds } from "@/lib/build-filters";
 function makeBuild(id: string, overrides: Partial<Build> = {}): Build {
   return {
     id,
-    slug: id,
     description: "",
     images: [],
     author: {

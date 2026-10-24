@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, MessageCircleQuestion } from "lucide-react";
+import { Heart, MessageCircleQuestion, User } from "lucide-react";
 import { Build } from "@/types";
 
 interface BuildCardProps {
@@ -11,7 +11,7 @@ const ADVICE_TAG = "アドバイス求む!";
 
 export default function BuildCard({ build }: BuildCardProps) {
   return (
-    <Link href={`/builds/${build.slug}`} className="group block bg-white rounded-md">
+    <Link href={`/builds/${build.id}`} className="group block bg-white rounded-md">
       {/* 建築画像 */}
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-white">
         <Image
@@ -41,13 +41,20 @@ export default function BuildCard({ build }: BuildCardProps) {
         {/* 2段目: 左に作者・右にいいね */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <Image
-              src={build.author.avatarUrl}
-              alt={build.author.displayName}
-              width={24}
-              height={24}
-              className="h-6 w-6 rounded-full object-cover shrink-0"
-            />
+            {/* アバターが未設定のユーザーはアイコンを出す */}
+            {build.author.avatarUrl ? (
+              <Image
+                src={build.author.avatarUrl}
+                alt={build.author.displayName}
+                width={24}
+                height={24}
+                className="h-6 w-6 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                <User className="h-3.5 w-3.5" />
+              </span>
+            )}
             <span className="truncate text-sm text-zinc-700">
               {build.author.displayName}
             </span>
