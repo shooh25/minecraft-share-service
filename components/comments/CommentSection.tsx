@@ -1,0 +1,135 @@
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { MessageCircle, User } from "lucide-react";
+import LoginDialog from "@/components/auth/LoginDialog";
+import type { BuildComment, SessionUser } from "@/types";
+
+interface CommentSectionProps {
+  // 表示するコメント
+  comments: BuildComment[];
+  // ログイン中のユーザー
+  user: SessionUser | null;
+}
+
+// コメント入力欄とコメント一覧。
+// コメント機能を実装するまでは、送信した内容を画面に追加するだけ(保存はしない)。
+export default function CommentSection({ comments, user }: CommentSectionProps) {
+  const [items, setItems] = useState(comments);
+  const [body, setBody] = useState("");
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  const trimmed = body.trim();
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!user || !trimmed) return;
+
+    setItems((current) => [
+      ...current,
+      {
+        id: `local-${Date.now()}`,
+        body: trimmed,
+        createdAt: new Date().toISOString(),
+        author: { id: user.id, nickname: user.nickname, avatarUrl: "" },
+      },
+    ]);
+    setBody("");
+  };
+
+  return (
+    <section className="mt-6 rounded-md bg-white p-4 sm:p-6">
+      <h2 className="flex items-center gap-2 text-lg font-bold text-zinc-900">
+        <MessageCircle className="h-5 w-5 text-green-700" />
+        コメント
+      </h2>
+
+      {user ? (
+        // ログイン時: 自分のアバター・入力欄・送信ボタン
+        <form onSubmit={handleSubmit} className="mt-4 flex items-start gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+            <User className="h-4 w-4" />
+          </span>
+          <input
+            type="text"
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            placeholder="コメントする"
+            aria-label="コメント"
+            className="min-w-0 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none lg:text-base"
+          />
+
+          <button
+            type="submit"
+            disabled={!trimmed}
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed lg:text-base"
+          >
+            送信
+          </button>
+        </form>
+      ) : (
+        // 未ログイン時: ログインを促す
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-md bg-zinc-50 px-4 py-6 text-center">
+          <p className="text-sm text-zinc-600 lg:text-base">
+            ログインしてからコメントできます。
+          </p>
+          <button
+            type="button"
+            onClick={() => setLoginOpen(true)}
+            className="inline-flex cursor-pointer items-center justify-center rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-medium text-white transition lg:text-base"
+          >
+            ログイン
+          </button>
+        </div>
+      )}
+
+      {items.length === 0 ? (
+        <p className="py-10 text-center text-md text-zinc-400">
+          コメントはまだありません
+        </p>
+      ) : (
+        <ul className="mt-4">
+          {items.map((comment) => (
+            <li key={comment.id} className="flex gap-3 py-3">
+              {/* アバター(未設定のユーザーはアイコンを出す) */}
+              {comment.author.avatarUrl ? (
+                <Image
+                  src={comment.author.avatarUrl}
+                  alt={comment.author.nickname}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                  <User className="h-4 w-4" />
+                </span>
+              )}
+
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate text-md font-medium text-zinc-900">
+                    {comment.author.nickname}
+                  </span>
+                  <time className="shrink-0 text-xs text-zinc-400">
+                    {comment.createdAt.slice(0, 10).replaceAll("-", "/")}
+                  </time>
+                </div>
+                <p className="whitespace-pre-wrap text-md text-zinc-700">
+                  {comment.body}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <LoginDialog
+        open={loginOpen}
+        error={false}
+        onClose={() => setLoginOpen(false)}
+      />
+    </section>
+  );
+}

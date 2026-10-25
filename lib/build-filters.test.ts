@@ -10,8 +10,7 @@ function makeBuild(id: string, overrides: Partial<Build> = {}): Build {
     images: [],
     author: {
       id: "u1",
-      username: "steve_redstone",
-      displayName: "Steve Redstone",
+      nickname: "Steve Redstone",
       avatarUrl: "",
     },
     tags: [],
@@ -72,7 +71,7 @@ describe("filterBuilds: 絞り込み", () => {
       description: "万年雪の峰に立つ氷の城塞です。",
       tags: ["城", "氷"],
       likesCount: 10,
-      author: { id: "u2", username: "alex_craft", displayName: "Alex Craft", avatarUrl: "" },
+      author: { id: "u2", nickname: "Alex Craft", avatarUrl: "" },
     }),
   ];
 

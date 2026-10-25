@@ -23,8 +23,7 @@ function toBuild(row: PostRow): Build {
     images: row.images,
     author: {
       id: row.author_id,
-      username: nickname,
-      displayName: nickname,
+      nickname,
       avatarUrl: "",
     },
     tags: [],
@@ -34,15 +33,28 @@ function toBuild(row: PostRow): Build {
   };
 }
 
+const SELECT_COLUMNS =
+  "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname )";
+
 // 投稿を新しい順に取得する
 export async function fetchBuilds(): Promise<Build[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("posts")
-    .select(
-      "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname )",
-    )
+    .select(SELECT_COLUMNS)
     .order("created_at", { ascending: false });
 
   return ((data ?? []) as unknown as PostRow[]).map(toBuild);
+}
+
+// 投稿を1件取得する(見つからなければ null)
+export async function fetchBuild(id: string): Promise<Build | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("posts")
+    .select(SELECT_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+
+  return data ? toBuild(data as unknown as PostRow) : null;
 }

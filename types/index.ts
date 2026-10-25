@@ -1,9 +1,7 @@
 export interface User {
   id: string;
-  username: string;
-  displayName: string;
+  nickname: string;
   avatarUrl: string;
-  bio?: string;
 }
 
 export interface Build {
@@ -25,4 +23,12 @@ export interface Tag {
 // ログイン中のユーザー(Headerの表示に利用)
 export interface SessionUser {
   id: string;
+  nickname: string;
+}
+
+export interface BuildComment {
+  id: string;
+  body: string;
+  createdAt: string;
+  author: User;
 }

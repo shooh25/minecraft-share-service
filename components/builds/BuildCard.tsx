@@ -50,7 +50,7 @@ export default function BuildCard({ build }: BuildCardProps) {
             {build.author.avatarUrl ? (
               <Image
                 src={build.author.avatarUrl}
-                alt={build.author.displayName}
+                alt={build.author.nickname}
                 width={24}
                 height={24}
                 className="h-6 w-6 rounded-full object-cover shrink-0"
@@ -61,7 +61,7 @@ export default function BuildCard({ build }: BuildCardProps) {
               </span>
             )}
             <span className="truncate text-sm text-zinc-700">
-              {build.author.displayName}
+              {build.author.nickname}
             </span>
           </div>
 

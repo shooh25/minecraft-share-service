@@ -32,7 +32,7 @@ export function filterBuilds(
     // 検索語がないときは、タグが合っていれば残す
     if (!searchWord) return true;
     // 検索語があるときは、説明・タグ・作者名のどこかに入っていれば残す
-    const texts = [b.description, ...b.tags, b.author.displayName, b.author.username];
+    const texts = [b.description, ...b.tags, b.author.nickname];
     return texts.some((t) => t.toLowerCase().includes(searchWord));
   });
 }

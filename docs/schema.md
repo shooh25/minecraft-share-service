@@ -32,6 +32,7 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | description | text | NOT NULL。作品説明(1〜1000文字、空白のみ不可)。タイトルは持たない |
 | images | text[] | NOT NULL。R2のオブジェクトキーを1〜5件。配列順が表示順 |
 | likes_count | integer | NOT NULL, 初期 0, 非負。人気順の並び替えに使用 |
+| comments_count | integer | NOT NULL, 初期 0, 非負。作品カードのコメント数表示に使用 |
 | created_at | timestamptz | NOT NULL, 初期 now()。新着順の並び替えに使用 |
 | updated_at | timestamptz | NOT NULL, 初期 now()。UPDATE 時にトリガーで更新 |
 
