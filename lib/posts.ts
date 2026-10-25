@@ -7,6 +7,7 @@ interface PostRow {
   description: string;
   images: string[];
   likes_count: number;
+  comments_count: number;
   created_at: string;
   author_id: string;
   profiles: { nickname: string } | null;
@@ -28,7 +29,7 @@ function toBuild(row: PostRow): Build {
     },
     tags: [],
     likesCount: row.likes_count,
-    commentsCount: 0,
+    commentsCount: row.comments_count,
     createdAt: row.created_at,
   };
 }
@@ -39,7 +40,7 @@ export async function fetchBuilds(): Promise<Build[]> {
   const { data } = await supabase
     .from("posts")
     .select(
-      "id, description, images, likes_count, created_at, author_id, profiles ( nickname )",
+      "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname )",
     )
     .order("created_at", { ascending: false });
 

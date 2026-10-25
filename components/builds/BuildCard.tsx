@@ -1,6 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, MessageCircleQuestion, User } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  MessageCircleQuestion,
+  User,
+} from "lucide-react";
 import { Build } from "@/types";
 
 interface BuildCardProps {
@@ -60,9 +65,18 @@ export default function BuildCard({ build }: BuildCardProps) {
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-sm text-zinc-500 shrink-0">
-            <Heart className="h-3.5 w-3.5 text-zinc-400" />
-            <span>{build.likesCount}</span>
+          <div className="flex shrink-0 items-center gap-3 text-sm text-zinc-500">
+            {/* いいね数 */}
+            <div className="flex items-center gap-1">
+              <Heart className="h-3.5 w-3.5 text-zinc-400" />
+              <span>{build.likesCount}</span>
+            </div>
+
+            {/* コメント数 */}
+            <div className="flex items-center gap-1">
+              <MessageCircle className="h-3.5 w-3.5 text-zinc-400" />
+              <span>{build.commentsCount}</span>
+            </div>
           </div>
         </div>
       </div>
