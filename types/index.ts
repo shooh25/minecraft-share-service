@@ -20,7 +20,7 @@ export interface Tag {
   name: string;
 }
 
-// ログイン中のユーザー(Headerの表示に利用)
+// ログイン中のユーザー
 export interface SessionUser {
   id: string;
   nickname: string;

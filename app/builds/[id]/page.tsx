@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Heart, User } from "lucide-react";
+import { Heart } from "lucide-react";
 import BuildImageSlider from "@/components/builds/BuildImageSlider";
 import CommentSection from "@/components/comments/CommentSection";
 import { fetchCurrentUser } from "@/lib/auth";
@@ -50,7 +50,7 @@ interface BuildDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-// 作品詳細。画像・説明・いいね数・コメント一覧を表示する。
+// 作品詳細
 export default async function BuildDetailPage({
   params,
 }: BuildDetailPageProps) {
@@ -68,20 +68,8 @@ export default async function BuildDetailPage({
         <BuildImageSlider images={build.images} alt={build.description} />
 
         <div className="space-y-4 p-4 sm:p-6">
-          {/* 作者・いいね数 */}
+          {/* いいね数 */}
           <div className="flex items-center justify-between gap-4">
-            <Link
-              href={`/users/${build.author.id}`}
-              className="flex min-w-0 items-center gap-2 hover:opacity-80"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-                <User className="h-4 w-4" />
-              </span>
-              <span className="truncate text-md font-medium text-zinc-900">
-                {build.author.nickname}
-              </span>
-            </Link>
-
             <div className="flex shrink-0 items-center gap-1 text-md text-zinc-500">
               <Heart className="h-4 w-4 text-zinc-400" />
               <span>{build.likesCount}</span>
@@ -92,6 +80,21 @@ export default async function BuildDetailPage({
           <p className="whitespace-pre-wrap text-base leading-relaxed text-zinc-800">
             {build.description}
           </p>
+
+          {/* タグ */}
+          {build.tags.length > 0 && (
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-base font-bold text-green-700">
+              {build.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/builds?tag=${encodeURIComponent(tag)}`}
+                  className="hover:underline"
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </article>
 

@@ -59,6 +59,8 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 - 主キーが2列の組のため、**同じ作品に同じタグを2回付けられない**
 - `post_tags(tag_id)` にインデックス（タグ → 作品一覧の検索用）
 - タグの件数（count）は保存せず、`post_tags` の GROUP BY で都度集計
+- 投稿後のユーザー操作は**追加のみ**。解除・付け替えは不可で、行は投稿またはタグの削除時に CASCADE で削除される
+- 1投稿につき**最大10個**
 
 ## likes
 
@@ -78,7 +80,7 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 |---|---|---|---|
 | profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人（`nickname` / `avatar_key` の列単位）/ DELETE なし |
 | posts | 全員 | 認証済み かつ ニックネーム設定済み | DELETE 本人（UPDATE なし） |
-| post_tags | 全員 | 自分の作品に対してのみ | DELETE 自分の作品に対してのみ（UPDATE なし） |
+| post_tags | 全員 | 自分の作品に対してのみ | DELETE なし（投稿・タグ削除時は CASCADE、service_role は可）/ UPDATE なし |
 | likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
 | tags | 全員 | なし（追加は運営側が service_role で行う） | 未使用 |
 

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { fetchBuildTagNames } from "@/lib/tags";
 import type { Build } from "@/types";
 
 // posts と profilesを結合して取得したときの1行分
@@ -56,5 +57,10 @@ export async function fetchBuild(id: string): Promise<Build | null> {
     .eq("id", id)
     .maybeSingle();
 
-  return data ? toBuild(data as unknown as PostRow) : null;
+  if (!data) return null;
+
+  const build = toBuild(data as unknown as PostRow);
+  build.tags = await fetchBuildTagNames(id);
+
+  return build;
 }
