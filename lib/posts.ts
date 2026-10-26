@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { fetchBuildTagNames } from "@/lib/tags";
 import type { Build } from "@/types";
 
-// posts と profilesを結合して取得したときの1行分
+// posts と profiles・タグを結合して取得したときの1行分
 interface PostRow {
   id: string;
   description: string;
@@ -12,6 +11,7 @@ interface PostRow {
   created_at: string;
   author_id: string;
   profiles: { nickname: string } | null;
+  post_tags: { tags: { name: string } | null }[] | null;
 }
 
 // DBの投稿を画面用の作品に変換する
@@ -27,7 +27,9 @@ function toBuild(row: PostRow): Build {
       nickname,
       avatarUrl: "",
     },
-    tags: [],
+    tags: (row.post_tags ?? []).flatMap((postTag) =>
+      postTag.tags ? [postTag.tags.name] : [],
+    ),
     likesCount: row.likes_count,
     commentsCount: row.comments_count,
     createdAt: row.created_at,
@@ -35,7 +37,7 @@ function toBuild(row: PostRow): Build {
 }
 
 const SELECT_COLUMNS =
-  "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname )";
+  "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname ), post_tags ( tags ( name ) )";
 
 // 投稿を新しい順に取得する
 export async function fetchBuilds(): Promise<Build[]> {
@@ -59,8 +61,5 @@ export async function fetchBuild(id: string): Promise<Build | null> {
 
   if (!data) return null;
 
-  const build = toBuild(data as unknown as PostRow);
-  build.tags = await fetchBuildTagNames(id);
-
-  return build;
+  return toBuild(data as unknown as PostRow);
 }
