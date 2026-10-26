@@ -40,12 +40,18 @@ const SELECT_COLUMNS =
   "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname ), post_tags ( tags ( name ) )";
 
 // 投稿を新しい順に取得する
-export async function fetchBuilds(): Promise<Build[]> {
+export async function fetchBuilds(tag: string | null = null): Promise<Build[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("posts")
-    .select(SELECT_COLUMNS)
-    .order("created_at", { ascending: false });
+
+  // タグで絞り込むときだけ、条件用の内部結合を足す
+  const select = tag
+    ? `${SELECT_COLUMNS}, tag_filter:post_tags!inner ( tags!inner ( name ) )`
+    : SELECT_COLUMNS;
+
+  let request = supabase.from("posts").select(select);
+  if (tag) request = request.eq("tag_filter.tags.name", tag);
+
+  const { data } = await request.order("created_at", { ascending: false });
 
   return ((data ?? []) as unknown as PostRow[]).map(toBuild);
 }

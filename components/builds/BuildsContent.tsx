@@ -24,8 +24,8 @@ export default function BuildsContent({ tags, builds }: BuildsContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // クエリパラメータを取得する(sort / tag / q)
-  const { sortBy, tag: selectedTag, query } = parseFilters(searchParams);
+  // クエリパラメータを取得する(sort / q)
+  const { sortBy, query } = parseFilters(searchParams);
 
   // 書き換えたパラメータをURLに反映する
   const syncUrl = (params: URLSearchParams) => {
@@ -45,10 +45,10 @@ export default function BuildsContent({ tags, builds }: BuildsContentProps) {
     syncUrl(params);
   };
 
-  // 条件に合う作品だけにして、並び替えて返す
+  // 検索語に合う作品だけにして、並び替えて返す
   const filteredBuilds = useMemo(
-    () => sortBuilds(filterBuilds(builds, { tag: selectedTag, query }), sortBy),
-    [builds, selectedTag, query, sortBy],
+    () => sortBuilds(filterBuilds(builds, { tag: null, query }), sortBy),
+    [builds, query, sortBy],
   );
 
   return (

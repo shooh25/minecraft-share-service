@@ -46,14 +46,10 @@ const MOCK_COMMENTS: BuildComment[] = [
   },
 ];
 
-interface BuildDetailPageProps {
-  params: Promise<{ id: string }>;
-}
-
 // 作品詳細
 export default async function BuildDetailPage({
   params,
-}: BuildDetailPageProps) {
+}: PageProps<"/builds/[id]">) {
   const { id } = await params;
   const [build, user] = await Promise.all([fetchBuild(id), fetchCurrentUser()]);
 
