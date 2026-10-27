@@ -11,12 +11,22 @@ export interface BuildFilters {
   query: string;
 }
 
-// URLの「?以降」から現在の条件を読み取る(sort は recent 以外すべて popular)
-export function parseFilters(searchParams: URLSearchParams): BuildFilters {
+type FilterSource =
+  | URLSearchParams
+  | Record<string, string | string[] | undefined>;
+
+function read(source: FilterSource, key: string): string | null {
+  if (source instanceof URLSearchParams) return source.get(key);
+  const value = source[key];
+  return typeof value === "string" ? value : null;
+}
+
+// URLの「?以降」から現在の条件を読み取る
+export function parseFilters(source: FilterSource): BuildFilters {
   return {
-    sortBy: searchParams.get("sort") === "recent" ? "recent" : "popular",
-    tag: searchParams.get("tag"),
-    query: searchParams.get("q") ?? "",
+    sortBy: read(source, "sort") === "recent" ? "recent" : "popular",
+    tag: read(source, "tag"),
+    query: read(source, "q") ?? "",
   };
 }
 

@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
-import { filterBuilds, parseFilters, sortBuilds } from "@/lib/build-filters";
-import type { Build, Tag as TagItem } from "@/types";
+import { parseFilters } from "@/lib/build-filters";
+import type { Build, BuildPage, Tag as TagItem } from "@/types";
 
 interface BuildsContentProps {
   // タグの一覧
   tags: TagItem[];
-  // DBから取得した作品の一覧
-  builds: Build[];
+  // 初回に取得した1ページ分の作品一覧
+  initialBuilds: Build[];
+  // 続きの位置。なければ末尾
+  initialNextCursor: string | null;
 }
 
 // 人気順 / 新着順の選択肢
@@ -20,12 +22,66 @@ const SORT_OPTIONS = [
   { value: "recent", label: "新着順" },
 ] as const;
 
-export default function BuildsContent({ tags, builds }: BuildsContentProps) {
+export default function BuildsContent({
+  tags,
+  initialBuilds,
+  initialNextCursor,
+}: BuildsContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // クエリパラメータを取得する(sort / q)
-  const { sortBy, query } = parseFilters(searchParams);
+  // 並び順はURLから読み取る
+  const { sortBy } = parseFilters(searchParams);
+
+  // 画面に表示する作品一覧。追加読み込みの結果は末尾に足す
+  const [builds, setBuilds] = useState(initialBuilds);
+  // 次ページの取得位置。ないときは続きなし
+  const [nextCursor, setNextCursor] = useState(initialNextCursor);
+  // 追加読み込み中かどうか。「読み込み中...」の表示に使う
+  const [loading, setLoading] = useState(false);
+  // 追加読み込みに失敗したかどうか。「再試行」ボタンの表示に使う
+  const [error, setError] = useState(false);
+  // 追加読み込み中かどうか。2回以上連続で読み込むのを防ぐ
+  const loadingRef = useRef(false);
+  // 一覧末尾の要素
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // 次のページを読み込んで末尾に足す
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
+    setError(false);
+
+    try {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("cursor", nextCursor);
+      const response = await fetch(`/api/builds?${params}`);
+      if (!response.ok) throw new Error();
+      const page = (await response.json()) as BuildPage;
+      setBuilds((current) => {
+        // 取得中にいいね数が変わると同じ作品が返ることがあるため、IDで重複を除く
+        const seen = new Set(current.map((build) => build.id));
+        return [...current, ...page.builds.filter((b) => !seen.has(b.id))];
+      });
+      setNextCursor(page.builds.length ? page.nextCursor : null);
+    } catch {
+      setError(true);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
+  }, [nextCursor, searchParams]);
+
+  // 一覧の末尾が見えたら次を読み込む
+  useEffect(() => {
+    if (!sentinelRef.current || !nextCursor || error) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) void loadMore();
+    }, { rootMargin: "200px" });
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [error, loadMore, nextCursor]);
 
   // 書き換えたパラメータをURLに反映する
   const syncUrl = (params: URLSearchParams) => {
@@ -44,12 +100,6 @@ export default function BuildsContent({ tags, builds }: BuildsContentProps) {
     params.set("tag", name);
     syncUrl(params);
   };
-
-  // 検索語に合う作品だけにして、並び替えて返す
-  const filteredBuilds = useMemo(
-    () => sortBuilds(filterBuilds(builds, { tag: null, query }), sortBy),
-    [builds, query, sortBy],
-  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6">
@@ -83,9 +133,25 @@ export default function BuildsContent({ tags, builds }: BuildsContentProps) {
 
       {/* 作品グリッド(該当ゼロのときはBuildGridが案内文を出す) */}
       <BuildGrid
-        builds={filteredBuilds}
+        builds={builds}
         emptyMessage="該当する建築作品が見つかりませんでした。"
       />
+
+      {/* ここが見えたら次のページを読み込む */}
+      {nextCursor && <div ref={sentinelRef} aria-hidden className="h-1" />}
+
+      {loading && (
+        <p aria-live="polite" className="py-4 text-center text-sm text-zinc-500">読み込み中...</p>
+      )}
+
+      {error && (
+        <div className="py-4 text-center">
+          <p className="text-sm text-zinc-500">読み込みに失敗しました。</p>
+          <button type="button" onClick={() => void loadMore()} className="mt-2 text-sm font-medium text-zinc-900 underline">
+            再試行
+          </button>
+        </div>
+      )}
     </div>
   );
 }

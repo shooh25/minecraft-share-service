@@ -3,15 +3,16 @@ import { ChevronRight } from "lucide-react";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
 import { fetchTags } from "@/lib/tags";
-import { fetchBuilds } from "@/lib/posts";
-import { sortBuilds } from "@/lib/build-filters";
+import { fetchBuildsPage } from "@/lib/posts";
 
 export const instant = false;
 
 export default async function Home() {
-  const [tags, builds] = await Promise.all([fetchTags(), fetchBuilds()]);
-  const featuredBuilds = sortBuilds(builds, "popular").slice(0, 8);
-  const recentBuilds = sortBuilds(builds, "recent").slice(0, 8);
+  const [tags, featured, recent] = await Promise.all([
+    fetchTags(),
+    fetchBuildsPage({ sortBy: "popular", limit: 8 }),
+    fetchBuildsPage({ sortBy: "recent", limit: 8 }),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6 sm:space-y-8">
@@ -38,7 +39,7 @@ export default async function Home() {
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
-        <BuildGrid builds={featuredBuilds} />
+        <BuildGrid builds={featured.builds} />
       </section>
 
       {/* 新着作品 */}
@@ -55,7 +56,7 @@ export default async function Home() {
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
-        <BuildGrid builds={recentBuilds} />
+        <BuildGrid builds={recent.builds} />
       </section>
     </div>
   );

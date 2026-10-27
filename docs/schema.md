@@ -35,6 +35,7 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | comments_count | integer | NOT NULL, 初期 0, 非負。作品カードのコメント数表示に使用 |
 | created_at | timestamptz | NOT NULL, 初期 now()。新着順の並び替えに使用 |
 | updated_at | timestamptz | NOT NULL, 初期 now()。UPDATE 時にトリガーで更新 |
+| search_text | text | NOT NULL。検索用に「説明・タグ名・作者ニックネーム」を空白で連結した文字列。トリガーで自動更新する |
 
 - インデックス: `(created_at desc, id desc)` / `(likes_count desc, created_at desc, id desc)` / `(author_id, created_at desc, id desc)`
 - 投稿後のユーザーによる編集は不可（UPDATE ポリシーなし）。変更できるのは service_role のみ

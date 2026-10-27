@@ -20,6 +20,12 @@ export interface Tag {
   name: string;
 }
 
+// 作品一覧の1ページ分。nextCursor が null なら末尾
+export interface BuildPage {
+  builds: Build[];
+  nextCursor: string | null;
+}
+
 // ログイン中のユーザー
 export interface SessionUser {
   id: string;

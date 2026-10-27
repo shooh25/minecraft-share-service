@@ -1,25 +1,31 @@
 import { Suspense } from "react";
 import BuildsContent from "@/components/builds/BuildsContent";
+import { parseFilters } from "@/lib/build-filters";
 import { fetchTags } from "@/lib/tags";
-import { fetchBuilds } from "@/lib/posts";
+import { fetchBuildsPage } from "@/lib/posts";
 
 export const instant = false;
 
-// タグと作品の一覧はDBから取得し、表示はクライアント側のBuildsContentが行う
+// タグと初回の作品一覧はDBから直接取得し、続きはAPI経由で読み込む
 export default async function BuildsPage({
   searchParams,
 }: PageProps<"/builds">) {
-  const { tag } = await searchParams;
-  const tagName = typeof tag === "string" ? tag : null;
+  const { sortBy, tag, query } = parseFilters(await searchParams);
 
-  const [tags, builds] = await Promise.all([
+  const [tags, page] = await Promise.all([
     fetchTags(),
-    fetchBuilds(tagName),
+    fetchBuildsPage({ tag, query, sortBy }),
   ]);
 
   return (
     <Suspense fallback={<div className="min-h-[50vh]" />}>
-      <BuildsContent tags={tags} builds={builds} />
+      <BuildsContent
+        // 条件が変わったら、読み込み済みの一覧を先頭から作り直す
+        key={JSON.stringify({ tag, sortBy, query })}
+        tags={tags}
+        initialBuilds={page.builds}
+        initialNextCursor={page.nextCursor}
+      />
     </Suspense>
   );
 }
