@@ -12,7 +12,7 @@ import { Search, Plus, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoginDialog from "@/components/auth/LoginDialog";
 import { createClient } from "@/lib/supabase/client";
-import type { SessionUser } from "@/types";
+import type { SessionUser, Tag } from "@/types";
 
 interface HeaderProps {
   // ログイン中のユーザー(未ログインなら null)
@@ -29,10 +29,13 @@ const getServerLoginError = () => false;
 
 export default function Header({ user }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [tagSuggestions, setTagSuggestions] = useState<Tag[]>([]);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [closed, setClosed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
@@ -102,6 +105,60 @@ export default function Header({ user }: HeaderProps) {
     };
   }, [menuOpen]);
 
+  // 候補のタグを選んだら、そのタグで作品一覧を絞り込む
+  const selectTag = (name: string) => {
+    setSearchQuery("");
+    setTagSuggestions([]);
+    setSuggestOpen(false);
+    router.push(`/builds?tag=${encodeURIComponent(name)}`);
+  };
+
+  // 入力が落ち着いてからタグ候補を取得する
+  useEffect(() => {
+    const query = searchQuery.trim();
+
+    if (!query) return;
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/tags?q=${encodeURIComponent(query)}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) return;
+
+        const data = (await response.json()) as { tags: Tag[] };
+        setTagSuggestions(data.tags);
+        setSuggestOpen(data.tags.length > 0);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        console.error("タグ候補の取得に失敗しました", error);
+      }
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchQuery]);
+
+  // 検索欄の外側をクリックしたら候補を閉じる
+  useEffect(() => {
+    if (!suggestOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (searchRef.current?.contains(event.target as Node)) return;
+      setSuggestOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [suggestOpen]);
+
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white shadow-header">
@@ -115,16 +172,44 @@ export default function Header({ user }: HeaderProps) {
           </Link>
 
           {/* 検索バー */}
-          <div className="flex-1 max-w-sm sm:max-w-xl">
+          <div ref={searchRef} className="flex-1 max-w-sm sm:max-w-xl">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
                 placeholder="作品・タグ・作者を検索..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSuggestOpen(false);
+                }}
+                onFocus={() => {
+                  if (searchQuery.trim() && tagSuggestions.length > 0) {
+                    setSuggestOpen(true);
+                  }
+                }}
                 className="w-full rounded-md bg-zinc-100 py-2.5 pl-9 pr-4 text-sm lg:text-base text-zinc-900 placeholder-zinc-400 focus:bg-zinc-200 focus:outline-none transition"
               />
+
+              {suggestOpen && tagSuggestions.length > 0 && (
+                <ul
+                  aria-label="タグ候補"
+                  className="absolute left-0 right-0 py-2 top-full z-50 mt-2 overflow-hidden rounded-md border border-zinc-200 bg-white shadow-header"
+                >
+                  {tagSuggestions.map((tag) => (
+                    <li
+                      key={tag.id}
+                      onClick={() => selectTag(tag.name)}
+                      className="flex cursor-pointer items-center px-3 py-2.5 text-sm transition-colors hover:bg-zinc-100"
+                    >
+                      <span className="text-green-700">#</span>
+                      <span className="ml-1 truncate text-zinc-900">
+                        {tag.name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </form>
           </div>
 
