@@ -1,11 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Heart,
-  MessageCircle,
-  MessageCircleQuestion,
-  User,
-} from "lucide-react";
+import { Heart, MessageCircle, User } from "lucide-react";
 import { Build } from "@/types";
 
 interface BuildCardProps {
@@ -18,7 +13,7 @@ export default function BuildCard({ build }: BuildCardProps) {
   return (
     <Link href={`/builds/${build.id}`} className="group block bg-white rounded-md">
       {/* 建築画像 */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-white">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-md bg-white">
         <Image
           src={build.images[0]}
           alt={build.description}
@@ -29,8 +24,7 @@ export default function BuildCard({ build }: BuildCardProps) {
 
         {/* アドバイス求む!付きの作品は、画像の左上に目印を出す */}
         {build.tags.includes(ADVICE_TAG) && (
-          <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 text-xs font-bold text-zinc-950 shadow-sm">
-            <MessageCircleQuestion className="h-3.5 w-3.5" />
+          <div className="absolute left-0 top-0 inline-flex h-7 pb-0.5 items-center rounded-tl-md rounded-br-md bg-green-700 px-3 text-sm font-medium text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
             アドバイス求む!
           </div>
         )}
