@@ -97,6 +97,7 @@ export default function BuildsContent({
 
   const handleTagClick = (name: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("q"); // 検索ワードがあればURLから消す
     params.set("tag", name);
     syncUrl(params);
   };
