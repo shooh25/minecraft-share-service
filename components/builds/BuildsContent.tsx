@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Hash, Search } from "lucide-react";
 import BuildGrid from "@/components/builds/BuildGrid";
 import Tag from "@/components/tags/Tag";
 import { parseFilters } from "@/lib/build-filters";
@@ -30,8 +31,11 @@ export default function BuildsContent({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // 並び順はURLから読み取る
-  const { sortBy } = parseFilters(searchParams);
+  // 絞り込み条件と並び順はURLから読み取る
+  const { sortBy, tag, query } = parseFilters(searchParams);
+  // 検索条件の表示に使う
+  const keyword = query.trim();
+  const activeTag = tag?.trim() ?? "";
 
   // 画面に表示する作品一覧。追加読み込みの結果は末尾に足す
   const [builds, setBuilds] = useState(initialBuilds);
@@ -104,12 +108,39 @@ export default function BuildsContent({
 
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 sm:py-6 space-y-6">
+      {/* 何の検索結果を見ているのかをタグ一覧の上に示す */}
+      {(keyword || activeTag) && (
+        <h1 className="flex flex-wrap items-center gap-x-2 gap-y-1 break-words text-lg font-bold tracking-tight sm:text-2xl">
+          {keyword && (
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <Search
+                aria-hidden
+                className="h-4 w-4 shrink-0 sm:h-5 sm:w-5"
+              />
+              <span className="break-words">{keyword}</span>
+            </span>
+          )}
+          {keyword && activeTag && (
+            <span className="font-normal">/</span>
+          )}
+          {activeTag && (
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <Hash
+                aria-hidden
+                className="h-4 w-4 shrink-0 sm:h-5 sm:w-5"
+              />
+              <span className="break-words">{activeTag}</span>
+            </span>
+          )}
+        </h1>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-10">
         {/* タグフィルター(DBから取得した一覧) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          {tags.map((tag) => (
-            <button key={tag.id} onClick={() => handleTagClick(tag.name)}>
-              <Tag>#{tag.name}</Tag>
+          {tags.map((tagItem) => (
+            <button key={tagItem.id} onClick={() => handleTagClick(tagItem.name)}>
+              <Tag>#{tagItem.name}</Tag>
             </button>
           ))}
         </div>
