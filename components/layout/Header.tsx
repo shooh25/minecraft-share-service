@@ -177,7 +177,7 @@ export default function Header({ user }: HeaderProps) {
               <Search className="absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
-                placeholder="作品・タグ・作者を検索..."
+                placeholder="作品・タグを検索"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);

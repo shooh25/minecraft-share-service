@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { Tag } from "@/types";
 
-// DBに登録されているタグの一覧を取得する(登録順のまま返す)
+// DBに登録されているタグを最大15件取得する(登録順のまま返す)
 export async function fetchTags(): Promise<Tag[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("tags").select("id, name");
+  const { data } = await supabase.from("tags").select("id, name").limit(15);
 
   return (data ?? []) as Tag[];
 }
