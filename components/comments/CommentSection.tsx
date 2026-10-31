@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { MessageCircle, User } from "lucide-react";
+import { User } from "lucide-react";
 import LoginDialog from "@/components/auth/LoginDialog";
 import type { BuildComment, SessionUser } from "@/types";
 
@@ -14,7 +14,6 @@ interface CommentSectionProps {
 }
 
 // コメント入力欄とコメント一覧。
-// コメント機能を実装するまでは、送信した内容を画面に追加するだけ(保存はしない)。
 export default function CommentSection({ comments, user }: CommentSectionProps) {
   const [items, setItems] = useState(comments);
   const [body, setBody] = useState("");
@@ -39,9 +38,8 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
   };
 
   return (
-    <section className="mt-6 rounded-md bg-white p-4 sm:p-6">
-      <h2 className="flex items-center gap-2 text-lg font-bold text-zinc-900">
-        <MessageCircle className="h-5 w-5 text-green-700" />
+    <section className="p-4 sm:p-6">
+      <h2 className=" text-lg font-bold text-zinc-900">
         コメント
       </h2>
 

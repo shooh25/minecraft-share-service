@@ -123,3 +123,29 @@ export async function fetchBuild(id: string): Promise<Build | null> {
 
   return toBuild(data as unknown as PostRow);
 }
+
+// 右カラムに表示する、同じ作者の他の作品(新しい順)
+export interface AuthorPost {
+  id: string;
+  images: string[];
+  description: string;
+}
+
+export async function fetchAuthorPosts(
+  authorId: string,
+  excludeId: string,
+  limit = 4,
+): Promise<AuthorPost[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, images, description")
+    .eq("author_id", authorId)
+    .neq("id", excludeId)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+
+  return (data ?? []) as AuthorPost[];
+}
