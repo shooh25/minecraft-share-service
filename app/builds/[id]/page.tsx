@@ -66,7 +66,7 @@ export default async function BuildDetailPage({
         <div className="space-y-4 p-4 sm:p-6">
           {/* いいね数 */}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex shrink-0 items-center gap-1 text-md text-zinc-500">
+            <div className="flex shrink-0 items-center gap-1 text-sm text-zinc-500">
               <Heart className="h-4 w-4 text-zinc-400" />
               <span>{build.likesCount}</span>
             </div>

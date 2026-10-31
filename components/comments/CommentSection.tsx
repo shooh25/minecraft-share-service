@@ -57,13 +57,13 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
             onChange={(event) => setBody(event.target.value)}
             placeholder="コメントする"
             aria-label="コメント"
-            className="min-w-0 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none lg:text-base"
+            className="min-w-0 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
           />
 
           <button
             type="submit"
             disabled={!trimmed}
-            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed lg:text-base"
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed"
           >
             送信
           </button>
@@ -71,13 +71,13 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
       ) : (
         // 未ログイン時: ログインを促す
         <div className="mt-4 flex flex-col items-center gap-3 rounded-md bg-zinc-50 px-4 py-6 text-center">
-          <p className="text-sm text-zinc-600 lg:text-base">
+          <p className="text-sm text-zinc-600">
             ログインしてからコメントできます。
           </p>
           <button
             type="button"
             onClick={() => setLoginOpen(true)}
-            className="inline-flex cursor-pointer items-center justify-center rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-medium text-white transition lg:text-base"
+            className="inline-flex cursor-pointer items-center justify-center rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-medium text-white transition"
           >
             ログイン
           </button>
@@ -85,7 +85,7 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
       )}
 
       {items.length === 0 ? (
-        <p className="py-10 text-center text-md text-zinc-400">
+        <p className="py-10 text-center text-sm text-zinc-400">
           コメントはまだありません
         </p>
       ) : (
@@ -109,14 +109,14 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
 
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="truncate text-md font-medium text-zinc-900">
+                  <span className="truncate text-sm font-medium text-zinc-900">
                     {comment.author.nickname}
                   </span>
-                  <time className="shrink-0 text-xs text-zinc-400">
+                  <time className="shrink-0 text-sm text-zinc-400">
                     {comment.createdAt.slice(0, 10).replaceAll("-", "/")}
                   </time>
                 </div>
-                <p className="whitespace-pre-wrap text-md text-zinc-700">
+                <p className="whitespace-pre-wrap text-sm text-zinc-700">
                   {comment.body}
                 </p>
               </div>
