@@ -75,6 +75,20 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 - `likes(user_id)` にインデックス（退会時の CASCADE・自分がいいねした作品の取得用）
 - `posts.likes_count` は likes の INSERT / DELETE トリガーで加減算する（DB内で加算するため同時実行でもずれない）
 
+## follows
+
+| カラム | 型 | 説明 |
+|---|---|---|
+| follower_id | uuid | FK → profiles.id, ON DELETE CASCADE / 主キーは (follower_id, followee_id) の組。フォローしたユーザー |
+| followee_id | uuid | FK → profiles.id, ON DELETE CASCADE。フォローされたユーザー |
+
+- 主キーが2列の組のため、**同じ相手を二重にフォローできない**
+- `follows_no_self` CHECK により**自分自身をフォローできない**
+- `follows(followee_id)` にインデックス（フォロワー数の集計用）。フォロー数は主キーの先頭列 `follower_id` で集計する
+- フォロー数・フォロワー数は保存せず、`follows` の `count(*)` で都度集計する
+- フォロー関係の SELECT は本人が関係する行のみ（自分がフォローした相手・自分をフォローした相手）。他のユーザーのフォロー／フォロワーの内訳は取得できない。未ログインには `follow_counts(uuid)`（security definer）で**フォロー数・フォロワー数だけ**返す
+- フォロー解除は行の DELETE のみ（UPDATE なし）
+
 ## RLS ポリシー（要約）
 
 | テーブル | SELECT | INSERT | UPDATE / DELETE |
@@ -83,7 +97,9 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | posts | 全員 | 認証済み かつ ニックネーム設定済み | DELETE 本人（UPDATE なし） |
 | post_tags | 全員 | 自分の作品に対してのみ | DELETE なし（投稿・タグ削除時は CASCADE、service_role は可）/ UPDATE なし |
 | likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
+| follows | 本人が関係する行のみ | 認証済み（`follower_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
 | tags | 全員 | なし（追加は運営側が service_role で行う） | 未使用 |
 
-- 投稿・タグ付け・いいねの INSERT は `auth.uid()` と所有者の一致を条件にする。
+- 投稿・タグ付け・いいね・フォローの INSERT は `auth.uid()` と所有者の一致を条件にする。
+- 未ログインのフォロー数・フォロワー数は `follow_counts(uuid)` を経由して取得する（`follows` 自体は読めない）。
 - テーブル権限は各マイグレーションで明示的に GRANT / REVOKE する。
