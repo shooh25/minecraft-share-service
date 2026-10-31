@@ -23,7 +23,14 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!user || !trimmed) return;
+
+    // 未ログイン時は送信せず、ログインダイアログを開く
+    if (!user) {
+      setLoginOpen(true);
+      return;
+    }
+
+    if (!trimmed) return;
 
     setItems((current) => [
       ...current,
@@ -43,44 +50,27 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
         コメント
       </h2>
 
-      {user ? (
-        // ログイン時: 自分のアバター・入力欄・送信ボタン
-        <form onSubmit={handleSubmit} className="mt-4 flex items-start gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-            <User className="h-4 w-4" />
-          </span>
-          <input
-            type="text"
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-            placeholder="コメントする"
-            aria-label="コメント"
-            className="min-w-0 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
-          />
+      <form onSubmit={handleSubmit} className="mt-4 flex items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+          <User className="h-4 w-4" />
+        </span>
+        <input
+          type="text"
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          placeholder="コメントする"
+          aria-label="コメント"
+          className="min-w-0 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
+        />
 
-          <button
-            type="submit"
-            disabled={!trimmed}
-            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed"
-          >
-            送信
-          </button>
-        </form>
-      ) : (
-        // 未ログイン時: ログインを促す
-        <div className="mt-4 flex flex-col items-center gap-3 rounded-md bg-zinc-50 px-4 py-6 text-center">
-          <p className="text-sm text-zinc-600">
-            ログインしてからコメントできます。
-          </p>
-          <button
-            type="button"
-            onClick={() => setLoginOpen(true)}
-            className="inline-flex cursor-pointer items-center justify-center rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-medium text-white transition"
-          >
-            ログイン
-          </button>
-        </div>
-      )}
+        <button
+          type="submit"
+          disabled={Boolean(user) && !trimmed}
+          className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed"
+        >
+          送信
+        </button>
+      </form>
 
       {items.length === 0 ? (
         <p className="py-10 text-center text-sm text-zinc-400">
