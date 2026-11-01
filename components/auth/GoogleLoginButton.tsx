@@ -12,11 +12,16 @@ export default function GoogleLoginButton() {
     setLoading(true);
     setError(false);
 
+    // ログイン完了後は元のページへ戻す
+    const { pathname, search, origin } = window.location;
+    const returnTo = `${pathname}${search}`;
+    const next = pathname.startsWith("/auth") ? "/" : returnTo;
+
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 

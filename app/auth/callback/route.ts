@@ -12,16 +12,23 @@ export async function GET(request: NextRequest) {
   const next =
     nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/";
 
+  // 失敗時も元のページへ戻し、そこでログインダイアログを開かせる
+  const redirectWithError = () => {
+    const url = new URL(next, origin);
+    url.searchParams.set("loginError", "1");
+    return NextResponse.redirect(url);
+  };
+
   if (!code) {
-    return NextResponse.redirect(`${origin}/?loginError=1`);
+    return redirectWithError();
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(`${origin}/?loginError=1`);
+    return redirectWithError();
   }
 
-  return NextResponse.redirect(`${origin}${next}`);
+  return NextResponse.redirect(new URL(next, origin));
 }
