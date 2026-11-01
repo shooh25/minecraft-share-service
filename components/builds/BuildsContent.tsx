@@ -115,9 +115,9 @@ export default function BuildsContent({
             <span className="inline-flex min-w-0 items-center gap-1">
               <Search
                 aria-hidden
-                className="h-4 w-4 shrink-0 text-green-700 sm:h-5 sm:w-5"
+                className="h-4 w-4 shrink-0 text-zinc-900 sm:h-5 sm:w-5"
               />
-              <span className="break-words text-green-700">{keyword}</span>
+              <span className="break-words text-zinc-900">{keyword}</span>
             </span>
           )}
           {keyword && activeTag && (
@@ -127,9 +127,9 @@ export default function BuildsContent({
             <span className="inline-flex min-w-0 items-center gap-1">
               <Hash
                 aria-hidden
-                className="h-4 w-4 shrink-0 text-green-700 sm:h-5 sm:w-5"
+                className="h-4 w-4 shrink-0 text-zinc-900 sm:h-5 sm:w-5"
               />
-              <span className="break-words text-green-700">{activeTag}</span>
+              <span className="break-words text-zinc-900">{activeTag}</span>
             </span>
           )}
         </h1>
