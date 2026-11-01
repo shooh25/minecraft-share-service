@@ -16,10 +16,12 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | id | uuid | FK → auth.users.id, ON DELETE CASCADE |
 | nickname | text | NOT NULL。ユーザー入力の表示名。**重複可** |
 | avatar_key | text | NULL 可。R2のオブジェクトキー。未設定は NULL（空文字は不可） |
+| bio | text | NULL 可。自己紹介文（1〜160文字、空白のみ不可）。未設定は NULL（空文字は不可） |
 
 - 初回ログイン時にトリガーで自動作成する（nickname は空文字で作成し、設定画面で UPDATE する）
 - SELECT は全員に開放する（作品一覧・作品詳細で作者名・アバターを表示するため）。UPDATE は本人のみ
-- ユーザーが UPDATE できる列は `nickname` と `avatar_key` に限定する
+- ユーザーが UPDATE できる列は `nickname` / `avatar_key` / `bio` に限定する
+- `bio` の長さは `char_length(btrim(bio))` で1〜160文字に制限する（前後の空白は長さに含めない）
 - アバターは外部URLではなく R2 のオブジェクトキーで保持し、配信URLはアプリ側で組み立てる
 
 
@@ -93,7 +95,7 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 
 | テーブル | SELECT | INSERT | UPDATE / DELETE |
 |---|---|---|---|
-| profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人（`nickname` / `avatar_key` の列単位）/ DELETE なし |
+| profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人（`nickname` / `avatar_key` / `bio` の列単位）/ DELETE なし |
 | posts | 全員 | 認証済み かつ ニックネーム設定済み | DELETE 本人（UPDATE なし） |
 | post_tags | 全員 | 自分の作品に対してのみ | DELETE なし（投稿・タグ削除時は CASCADE、service_role は可）/ UPDATE なし |
 | likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
