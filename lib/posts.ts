@@ -17,7 +17,7 @@ export interface PostRow {
 
 // 投稿と作者・タグを結合して取得するときのカラム指定
 const SELECT_COLUMNS =
-  "id, description, images, likes_count, comments_count, created_at, author_id, profiles ( nickname ), post_tags ( tags ( name ) )";
+  "id, description, images, likes_count, comments_count, created_at, author_id, profiles!posts_author_id_fkey ( nickname ), post_tags ( tags ( name ) )";
 
 // カーソルが壊れていないか検証
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
