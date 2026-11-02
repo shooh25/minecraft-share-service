@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { User } from "lucide-react";
+import { Send, User } from "lucide-react";
 import LoginDialog from "@/components/auth/LoginDialog";
+import { formatDate } from "@/lib/date";
 import type { BuildComment, SessionUser } from "@/types";
 
 interface CommentSectionProps {
@@ -50,8 +51,8 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
         コメント
       </h2>
 
-      <form onSubmit={handleSubmit} className="mt-4 flex items-start gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+      <form onSubmit={handleSubmit} className="mt-4 flex items-start gap-4 ">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
           <User className="h-4 w-4" />
         </span>
         <input
@@ -60,15 +61,15 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
           onChange={(event) => setBody(event.target.value)}
           placeholder="コメントする"
           aria-label="コメント"
-          className="min-w-0 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
+          className="min-w-0 h-11 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
         />
 
         <button
           type="submit"
           disabled={Boolean(user) && !trimmed}
-          className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed"
+          className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed"
         >
-          送信
+          コメント
         </button>
       </form>
 
@@ -79,7 +80,7 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
       ) : (
         <ul className="mt-4">
           {items.map((comment) => (
-            <li key={comment.id} className="flex gap-3 py-3">
+            <li key={comment.id} className="flex gap-4 py-3">
               {/* アバター(未設定のユーザーはアイコンを出す) */}
               {comment.author.avatarUrl ? (
                 <Image
@@ -87,21 +88,24 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
                   alt={comment.author.nickname}
                   width={32}
                   height={32}
-                  className="h-8 w-8 shrink-0 rounded-full object-cover"
+                  className="h-11 w-11 shrink-0 rounded-full object-cover"
                 />
               ) : (
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
                   <User className="h-4 w-4" />
                 </span>
               )}
 
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="truncate text-sm font-medium text-zinc-900">
+                  <span className="truncate text-sm font-bold text-zinc-900">
                     {comment.author.nickname}
                   </span>
-                  <time className="shrink-0 text-sm text-zinc-400">
-                    {comment.createdAt.slice(0, 10).replaceAll("-", "/")}
+                  <time
+                    dateTime={comment.createdAt}
+                    className="shrink-0 text-sm text-zinc-500"
+                  >
+                    {formatDate(comment.createdAt)}
                   </time>
                 </div>
                 <p className="whitespace-pre-wrap text-sm text-zinc-700">

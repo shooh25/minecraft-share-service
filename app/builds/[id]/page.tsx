@@ -155,7 +155,7 @@ export default async function BuildDetailPage({
                 </span>
               )}
               <span className="min-w-0 truncate text-base font-bold text-zinc-900">
-                {build.author.nickname}らうねん
+                {build.author.nickname}
               </span>
             </Link>
 

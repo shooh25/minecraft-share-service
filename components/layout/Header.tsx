@@ -221,9 +221,9 @@ export default function Header({ user }: HeaderProps) {
           >
             <Link
               href="/builds/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-green-700 px-3.5 py-2.5 text-sm lg:text-base font-medium text-white"
+              className="inline-flex h-11 items-center gap-1 rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-medium text-white"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">投稿する</span>
             </Link>
             {/* ログイン時はユーザーアイコン、未ログイン時はログインボタン */}
@@ -236,7 +236,7 @@ export default function Header({ user }: HeaderProps) {
                   aria-label="ユーザーメニュー"
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
-                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-400 transition hover:bg-zinc-200"
+                  className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-400 transition hover:bg-zinc-200"
                 >
                   <User className="h-5 w-5" />
                 </button>
