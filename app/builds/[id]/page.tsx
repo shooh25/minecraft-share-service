@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Bookmark, Share, User } from "lucide-react";
+import { Share, User } from "lucide-react";
+import BookmarkButton from "@/components/builds/BookmarkButton";
 import BuildImageSlider from "@/components/builds/BuildImageSlider";
 import LikeButton from "@/components/builds/LikeButton";
 import CommentSection from "@/components/comments/CommentSection";
 import { fetchCurrentUser } from "@/lib/auth";
+import { isPostBookmarked } from "@/lib/bookmarks";
 import { formatDate } from "@/lib/date";
 import { isPostLiked } from "@/lib/likes";
 import { fetchAuthorPosts, fetchBuild } from "@/lib/posts";
@@ -60,9 +62,10 @@ export default async function BuildDetailPage({
   if (!build) notFound();
 
   const comments = MOCK_COMMENTS;
-  const [authorPosts, liked] = await Promise.all([
+  const [authorPosts, liked, bookmarked] = await Promise.all([
     fetchAuthorPosts(build.author.id, build.id),
     user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
+    user ? isPostBookmarked(build.id, user.id) : Promise.resolve(false),
   ]);
 
   return (
@@ -82,13 +85,11 @@ export default async function BuildDetailPage({
                   initialLiked={liked}
                   loggedIn={Boolean(user)}
                 />
-                <button
-                  type="button"
-                  aria-label="ブックマーク"
-                  className="cursor-pointer text-zinc-900 transition"
-                >
-                  <Bookmark className="h-6 w-6" strokeWidth={1.8} />
-                </button>
+                <BookmarkButton
+                  postId={build.id}
+                  initialBookmarked={bookmarked}
+                  loggedIn={Boolean(user)}
+                />
                 <button
                   type="button"
                   aria-label="共有"
