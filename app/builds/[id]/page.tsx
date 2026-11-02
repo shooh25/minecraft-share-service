@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Bookmark, Heart, Share, User } from "lucide-react";
+import { Bookmark, Share, User } from "lucide-react";
 import BuildImageSlider from "@/components/builds/BuildImageSlider";
+import LikeButton from "@/components/builds/LikeButton";
 import CommentSection from "@/components/comments/CommentSection";
 import { fetchCurrentUser } from "@/lib/auth";
 import { formatDate } from "@/lib/date";
+import { isPostLiked } from "@/lib/likes";
 import { fetchAuthorPosts, fetchBuild } from "@/lib/posts";
 import type { BuildComment } from "@/types";
 
@@ -58,7 +60,10 @@ export default async function BuildDetailPage({
   if (!build) notFound();
 
   const comments = MOCK_COMMENTS;
-  const authorPosts = await fetchAuthorPosts(build.author.id, build.id);
+  const [authorPosts, liked] = await Promise.all([
+    fetchAuthorPosts(build.author.id, build.id),
+    user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
@@ -71,16 +76,12 @@ export default async function BuildDetailPage({
             <div className="space-y-2 p-4 sm:p-6 sm:pt-4">
               {/* いいね・ブックマーク・共有 */}
               <div className="flex items-center justify-end gap-4 pb-2">
-                <button
-                  type="button"
-                  aria-label={`いいね ${build.likesCount}件`}
-                  className="inline-flex cursor-pointer items-center gap-2 text-zinc-900 transition"
-                >
-                  <Heart className="h-6 w-6" strokeWidth={1.8} />
-                  <span className="text-sm font-semibold">
-                    {build.likesCount}
-                  </span>
-                </button>
+                <LikeButton
+                  postId={build.id}
+                  count={build.likesCount}
+                  initialLiked={liked}
+                  loggedIn={Boolean(user)}
+                />
                 <button
                   type="button"
                   aria-label="ブックマーク"

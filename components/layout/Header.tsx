@@ -79,8 +79,7 @@ export default function Header({ user }: HeaderProps) {
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      router.replace("/");
-      router.refresh();
+      window.location.reload();
     } finally {
       setMenuOpen(false);
       setSigningOut(false);
