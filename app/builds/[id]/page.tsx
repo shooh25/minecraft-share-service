@@ -6,9 +6,11 @@ import BookmarkButton from "@/components/builds/BookmarkButton";
 import BuildImageSlider from "@/components/builds/BuildImageSlider";
 import LikeButton from "@/components/builds/LikeButton";
 import CommentSection from "@/components/comments/CommentSection";
+import FollowButton from "@/components/follows/FollowButton";
 import { fetchCurrentUser } from "@/lib/auth";
 import { isPostBookmarked } from "@/lib/bookmarks";
 import { formatDate } from "@/lib/date";
+import { isFollowing } from "@/lib/follows";
 import { isPostLiked } from "@/lib/likes";
 import { fetchAuthorPosts, fetchBuild } from "@/lib/posts";
 import type { BuildComment } from "@/types";
@@ -62,10 +64,15 @@ export default async function BuildDetailPage({
   if (!build) notFound();
 
   const comments = MOCK_COMMENTS;
-  const [authorPosts, liked, bookmarked] = await Promise.all([
+  // 自分の投稿にはフォローボタンを出さない
+  const isOwnPost = user?.id === build.author.id;
+  const [authorPosts, liked, bookmarked, following] = await Promise.all([
     fetchAuthorPosts(build.author.id, build.id),
     user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
     user ? isPostBookmarked(build.id, user.id) : Promise.resolve(false),
+    user && !isOwnPost
+      ? isFollowing(build.author.id, user.id)
+      : Promise.resolve(false),
   ]);
 
   return (
@@ -160,6 +167,14 @@ export default async function BuildDetailPage({
                 {build.author.nickname}
               </span>
             </Link>
+
+            {!isOwnPost && (
+              <FollowButton
+                userId={build.author.id}
+                initialFollowing={following}
+                loggedIn={Boolean(user)}
+              />
+            )}
 
             <h2 className="mt-4 text-sm font-bold text-zinc-900">
               このユーザーの作品
