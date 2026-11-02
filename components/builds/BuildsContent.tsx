@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Hash, Search } from "lucide-react";
-import BuildGrid from "@/components/builds/BuildGrid";
+import InfiniteBuilds from "@/components/builds/InfiniteBuilds";
+import { useInfiniteBuilds } from "@/components/builds/useInfiniteBuilds";
 import Tag from "@/components/tags/Tag";
 import { parseFilters } from "@/lib/build-filters";
 import type { Build, BuildPage, Tag as TagItem } from "@/types";
@@ -37,55 +38,20 @@ export default function BuildsContent({
   const keyword = query.trim();
   const activeTag = tag?.trim() ?? "";
 
-  // 画面に表示する作品一覧。追加読み込みの結果は末尾に足す
-  const [builds, setBuilds] = useState(initialBuilds);
-  // 次ページの取得位置。ないときは続きなし
-  const [nextCursor, setNextCursor] = useState(initialNextCursor);
-  // 追加読み込み中かどうか。「読み込み中...」の表示に使う
-  const [loading, setLoading] = useState(false);
-  // 追加読み込みに失敗したかどうか。「再試行」ボタンの表示に使う
-  const [error, setError] = useState(false);
-  // 追加読み込み中かどうか。2回以上連続で読み込むのを防ぐ
-  const loadingRef = useRef(false);
-  // 一覧末尾の要素
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  // 次のページを読み込んで末尾に足す
-  const loadMore = useCallback(async () => {
-    if (!nextCursor || loadingRef.current) return;
-    loadingRef.current = true;
-    setLoading(true);
-    setError(false);
-
-    try {
+  // カーソルから次のページを取得する(絞り込み条件はURLから引き継ぐ)
+  const fetchPage = useCallback(
+    async (cursor: string): Promise<BuildPage> => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("cursor", nextCursor);
+      params.set("cursor", cursor);
       const response = await fetch(`/api/builds?${params}`);
       if (!response.ok) throw new Error();
-      const page = (await response.json()) as BuildPage;
-      setBuilds((current) => {
-        // 取得中にいいね数が変わると同じ作品が返ることがあるため、IDで重複を除く
-        const seen = new Set(current.map((build) => build.id));
-        return [...current, ...page.builds.filter((b) => !seen.has(b.id))];
-      });
-      setNextCursor(page.builds.length ? page.nextCursor : null);
-    } catch {
-      setError(true);
-    } finally {
-      loadingRef.current = false;
-      setLoading(false);
-    }
-  }, [nextCursor, searchParams]);
+      return (await response.json()) as BuildPage;
+    },
+    [searchParams],
+  );
 
-  // 一覧の末尾が見えたら次を読み込む
-  useEffect(() => {
-    if (!sentinelRef.current || !nextCursor || error) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) void loadMore();
-    }, { rootMargin: "200px" });
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [error, loadMore, nextCursor]);
+  const { builds, loading, error, loadMore, sentinelRef, hasMore } =
+    useInfiniteBuilds({ initialBuilds, initialNextCursor, fetchPage });
 
   // 書き換えたパラメータをURLに反映する
   const syncUrl = (params: URLSearchParams) => {
@@ -164,26 +130,15 @@ export default function BuildsContent({
       </div>
 
       {/* 作品グリッド(該当ゼロのときはBuildGridが案内文を出す) */}
-      <BuildGrid
+      <InfiniteBuilds
         builds={builds}
+        hasMore={hasMore}
+        loading={loading}
+        error={error}
+        onRetry={() => void loadMore()}
+        sentinelRef={sentinelRef}
         emptyMessage="該当する建築作品が見つかりませんでした。"
       />
-
-      {/* ここが見えたら次のページを読み込む */}
-      {nextCursor && <div ref={sentinelRef} aria-hidden className="h-1" />}
-
-      {loading && (
-        <p aria-live="polite" className="py-4 text-center text-sm text-zinc-500">読み込み中...</p>
-      )}
-
-      {error && (
-        <div className="py-4 text-center">
-          <p className="text-sm text-zinc-500">読み込みに失敗しました。</p>
-          <button type="button" onClick={() => void loadMore()} className="mt-2 text-sm font-medium text-zinc-900 underline">
-            再試行
-          </button>
-        </div>
-      )}
     </div>
   );
 }

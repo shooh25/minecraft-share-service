@@ -124,6 +124,97 @@ export async function fetchBuild(id: string): Promise<Build | null> {
   return toBuild(data as unknown as PostRow);
 }
 
+// 関連作品の取得位置。形式は共通タグ数_いいね数_日時_id
+export interface RelatedCursor {
+  sharedTags: number;
+  likesCount: number;
+  createdAt: string;
+  id: string;
+}
+
+// RPC が返す1行分
+interface RelatedPostRow {
+  id: string;
+  shared_tags: number;
+  likes_count: number;
+  created_at: string;
+}
+
+// 壊れたカーソルは null にする
+export function parseRelatedCursor(
+  value: string | null,
+): RelatedCursor | null {
+  if (!value) return null;
+
+  const [sharedTags, likes, createdAt, id] = value.split("_");
+  const shared = Number(sharedTags);
+  const likeCount = Number(likes);
+  if (
+    !/^\d+$/.test(sharedTags) ||
+    !Number.isSafeInteger(shared) ||
+    shared > 2_147_483_647 ||
+    !/^\d+$/.test(likes) ||
+    !Number.isSafeInteger(likeCount) ||
+    likeCount > 2_147_483_647 ||
+    !TIMESTAMP.test(createdAt) ||
+    Number.isNaN(Date.parse(createdAt)) ||
+    !UUID.test(id)
+  ) {
+    return null;
+  }
+
+  return { sharedTags: shared, likesCount: likeCount, createdAt, id };
+}
+
+// API が壊れたカーソルを先頭ページとして返さないようにする
+export const isValidRelatedCursor = (value: string | null) =>
+  parseRelatedCursor(value) !== null;
+
+// 関連作品の1ページ分。並びは共通タグ数→いいね数→新着の順で、続きがなければ nextCursor は null
+export async function fetchRelatedPostsPage(
+  postId: string,
+  cursor: string | null = null,
+  limit = 12,
+): Promise<BuildPage> {
+  const position = parseRelatedCursor(cursor);
+  const supabase = await createClient();
+
+  // 並び順と取得位置の判定はDB側で行う(PostgRESTでは共通タグ数で並べ替えられない)
+  const { data, error } = await supabase.rpc("related_posts", {
+    target: postId,
+    page_size: limit,
+    cursor_shared_tags: position?.sharedTags ?? null,
+    cursor_likes: position?.likesCount ?? null,
+    cursor_created: position?.createdAt ?? null,
+    cursor_id: position?.id ?? null,
+  });
+  if (error) throw error;
+
+  // 次ページがあるか知るために1件多く取得している
+  const rows = (data ?? []) as RelatedPostRow[];
+  const pageRows = rows.slice(0, limit);
+  const last = pageRows[pageRows.length - 1];
+  if (!last) return { builds: [], nextCursor: null };
+
+  const { data: posts, error: postsError } = await supabase
+    .from("posts")
+    .select(SELECT_COLUMNS)
+    .in("id", pageRows.map((row) => row.id));
+  if (postsError) throw postsError;
+
+  // 取得結果は順序が保証されないため、RPC が返した順に並べ直す
+  const order = new Map(pageRows.map((row, index) => [row.id, index]));
+  return {
+    builds: ((posts ?? []) as unknown as PostRow[])
+      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+      .map(toBuild),
+    nextCursor:
+      rows.length > limit
+        ? `${last.shared_tags}_${last.likes_count}_${last.created_at}_${last.id}`
+        : null,
+  };
+}
+
 // 右カラムに表示する、同じ作者の他の作品(新しい順)
 export interface AuthorPost {
   id: string;

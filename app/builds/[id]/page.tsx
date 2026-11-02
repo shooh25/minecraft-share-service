@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Share, User } from "lucide-react";
 import BookmarkButton from "@/components/builds/BookmarkButton";
 import BuildImageSlider from "@/components/builds/BuildImageSlider";
+import RelatedBuilds from "@/components/builds/RelatedBuilds";
 import LikeButton from "@/components/builds/LikeButton";
 import CommentSection from "@/components/comments/CommentSection";
 import FollowButton from "@/components/follows/FollowButton";
@@ -12,7 +13,11 @@ import { isPostBookmarked } from "@/lib/bookmarks";
 import { formatDate } from "@/lib/date";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
 import { isPostLiked } from "@/lib/likes";
-import { fetchAuthorPosts, fetchBuild } from "@/lib/posts";
+import {
+  fetchAuthorPosts,
+  fetchBuild,
+  fetchRelatedPostsPage,
+} from "@/lib/posts";
 import type { BuildComment } from "@/types";
 
 export const instant = false;
@@ -76,6 +81,7 @@ export default async function BuildDetailPage({
         : Promise.resolve(false),
       fetchFollowCounts(build.author.id),
     ]);
+  const related = await fetchRelatedPostsPage(build.id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
@@ -220,6 +226,25 @@ export default async function BuildDetailPage({
           </div>
         </aside>
       </div>
+
+      {/* 関連する作品(共通タグが多い順) */}
+      {related.builds.length > 0 && (
+        <section aria-labelledby="related-builds" className="mt-8">
+          <h2
+            id="related-builds"
+            className="text-2xl font-bold text-zinc-900"
+          >
+            関連する投稿
+          </h2>
+          <div className="mt-4">
+            <RelatedBuilds
+              postId={build.id}
+              initialBuilds={related.builds}
+              initialNextCursor={related.nextCursor}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

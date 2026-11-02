@@ -91,6 +91,13 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 - フォロー関係の SELECT は本人が関係する行のみ（自分がフォローした相手・自分をフォローした相手）。他のユーザーのフォロー／フォロワーの内訳は取得できない。未ログインには `follow_counts(uuid)`（security definer）で**フォロー数・フォロワー数だけ**返す
 - フォロー解除は行の DELETE のみ（UPDATE なし）
 
+## 関数
+
+| 関数 | 用途 |
+|---|---|
+| `follow_counts(uuid)` | フォロー数・フォロワー数を返す（security definer。未ログインでも件数のみ取得できる） |
+| `related_posts(uuid, integer, integer, integer, timestamptz, uuid)` | 関連作品を、共通タグが多い順（同数はいいね数・新着順）に1ページ分返す。取得位置（カーソル）を受け取り続きを返す |
+
 ## RLS ポリシー（要約）
 
 | テーブル | SELECT | INSERT | UPDATE / DELETE |
