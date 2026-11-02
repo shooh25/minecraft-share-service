@@ -67,7 +67,7 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
         <button
           type="submit"
           disabled={Boolean(user) && !trimmed}
-          className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed"
+          className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:hover:bg-green-700"
         >
           コメント
         </button>

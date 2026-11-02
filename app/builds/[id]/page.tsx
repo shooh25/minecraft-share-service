@@ -10,7 +10,7 @@ import FollowButton from "@/components/follows/FollowButton";
 import { fetchCurrentUser } from "@/lib/auth";
 import { isPostBookmarked } from "@/lib/bookmarks";
 import { formatDate } from "@/lib/date";
-import { isFollowing } from "@/lib/follows";
+import { fetchFollowCounts, isFollowing } from "@/lib/follows";
 import { isPostLiked } from "@/lib/likes";
 import { fetchAuthorPosts, fetchBuild } from "@/lib/posts";
 import type { BuildComment } from "@/types";
@@ -66,14 +66,16 @@ export default async function BuildDetailPage({
   const comments = MOCK_COMMENTS;
   // 自分の投稿にはフォローボタンを出さない
   const isOwnPost = user?.id === build.author.id;
-  const [authorPosts, liked, bookmarked, following] = await Promise.all([
-    fetchAuthorPosts(build.author.id, build.id),
-    user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
-    user ? isPostBookmarked(build.id, user.id) : Promise.resolve(false),
-    user && !isOwnPost
-      ? isFollowing(build.author.id, user.id)
-      : Promise.resolve(false),
-  ]);
+  const [authorPosts, liked, bookmarked, following, followCounts] =
+    await Promise.all([
+      fetchAuthorPosts(build.author.id, build.id),
+      user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
+      user ? isPostBookmarked(build.id, user.id) : Promise.resolve(false),
+      user && !isOwnPost
+        ? isFollowing(build.author.id, user.id)
+        : Promise.resolve(false),
+      fetchFollowCounts(build.author.id),
+    ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
@@ -167,6 +169,21 @@ export default async function BuildDetailPage({
                 {build.author.nickname}
               </span>
             </Link>
+
+            <div className="mt-2 flex items-center gap-3 text-sm text-zinc-500">
+              <span>
+                フォロー{" "}
+                <span className="font-bold text-zinc-900">
+                  {followCounts.followingCount}
+                </span>
+              </span>
+              <span>
+                フォロワー{" "}
+                <span className="font-bold text-zinc-900">
+                  {followCounts.followersCount}
+                </span>
+              </span>
+            </div>
 
             {!isOwnPost && (
               <FollowButton
