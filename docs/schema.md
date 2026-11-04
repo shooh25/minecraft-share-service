@@ -65,6 +65,25 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 - 投稿後のユーザー操作は**追加のみ**。解除・付け替えは不可で、行は投稿またはタグの削除時に CASCADE で削除される
 - 1投稿につき**最大10個**
 
+## post_comments
+
+| カラム | 型 | 説明 |
+|---|---|---|
+| id | uuid | PK, 自動生成 |
+| post_id | uuid | FK → posts.id, ON DELETE CASCADE |
+| user_id | uuid | FK → profiles.id, ON DELETE CASCADE |
+| content | text | NOT NULL。前後の空白を除いて1〜500文字 |
+| parent_id | uuid | 返信先のコメント。トップレベルは NULL |
+| root_id | uuid | スレッドの親コメント。トップレベルは NULL。INSERT 時にトリガーで自動設定 |
+| created_at | timestamptz | NOT NULL, 初期 now() |
+
+- 返信は**1階層**まで。返信への返信も `root_id` を同じ値にして、スレッド内に古い順で並べる
+- `(post_id, id)` の UNIQUE と複合外部キー `(post_id, parent_id)` / `(post_id, root_id)` により、**別の作品のコメントには返信できない**
+- `post_comments_reply_pair` CHECK により、トップレベルは `parent_id` / `root_id` がともに NULL、返信はともに NOT NULL
+- 親コメントを削除すると、返信も CASCADE で削除される
+- `posts.comments_count` は INSERT / DELETE トリガーで加減算し、**返信も1件として数える**
+- インデックス: `(post_id, created_at desc, id desc)` / `(root_id, created_at asc, id asc) where root_id is not null` / `(user_id, created_at desc, id desc)`
+
 ## likes
 
 | カラム | 型 | 説明 |
@@ -105,6 +124,7 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | profiles | 全員 | 未使用（トリガーで自動作成） | UPDATE 本人（`nickname` / `avatar_key` / `bio` の列単位）/ DELETE なし |
 | posts | 全員 | 認証済み かつ ニックネーム設定済み | DELETE 本人（UPDATE なし） |
 | post_tags | 全員 | 自分の作品に対してのみ | DELETE なし（投稿・タグ削除時は CASCADE、service_role は可）/ UPDATE なし |
+| post_comments | 全員 | 認証済み かつ ニックネーム設定済み（`user_id = auth.uid()`） | DELETE 本人または作品作者（UPDATE なし） |
 | likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
 | follows | 本人が関係する行のみ | 認証済み（`follower_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
 | tags | 全員 | なし（追加は運営側が service_role で行う） | 未使用 |
