@@ -37,4 +37,8 @@ export interface BuildComment {
   body: string;
   createdAt: string;
   author: User;
+  // 返信先のニックネーム(トップレベルは null)。返信の「@名前」表示に使う
+  parentNickname: string | null;
+  // このコメントに付いた返信(スレッド内で古い順)
+  replies: BuildComment[];
 }

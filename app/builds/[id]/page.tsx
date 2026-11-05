@@ -10,6 +10,7 @@ import CommentSection from "@/components/comments/CommentSection";
 import FollowButton from "@/components/follows/FollowButton";
 import { fetchCurrentUser } from "@/lib/auth";
 import { isPostBookmarked } from "@/lib/bookmarks";
+import { fetchComments } from "@/lib/comments";
 import { formatDate } from "@/lib/date";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
 import { isPostLiked } from "@/lib/likes";
@@ -18,46 +19,8 @@ import {
   fetchBuild,
   fetchRelatedPostsPage,
 } from "@/lib/posts";
-import type { BuildComment } from "@/types";
 
 export const instant = false;
-
-// コメント機能を実装するまでの表示確認用データ
-const MOCK_COMMENTS: BuildComment[] = [
-  {
-    id: "mock-1",
-    body: "屋根の曲線がきれいですね。使っているブロックを教えてほしいです!",
-    createdAt: "2026-10-20",
-    author: {
-      id: "mock-user-1",
-      nickname: "Alex Builder",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80",
-    },
-  },
-  {
-    id: "mock-2",
-    body: "苔の量が絶妙で、森に馴染んで見えます。参考にさせてもらいます。",
-    createdAt: "2026-10-21",
-    author: {
-      id: "mock-user-2",
-      nickname: "Steve R.",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80",
-    },
-  },
-  {
-    id: "mock-3",
-    body: "内装も見てみたいです!",
-    createdAt: "2026-10-22",
-    author: {
-      id: "mock-user-3",
-      nickname: "Queen",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
-    },
-  },
-];
 
 // 作品詳細
 export default async function BuildDetailPage({
@@ -68,7 +31,7 @@ export default async function BuildDetailPage({
 
   if (!build) notFound();
 
-  const comments = MOCK_COMMENTS;
+  const comments = await fetchComments(build.id);
   // 自分の投稿にはフォローボタンを出さない
   const isOwnPost = user?.id === build.author.id;
   const [authorPosts, liked, bookmarked, following, followCounts] =
@@ -144,7 +107,11 @@ export default async function BuildDetailPage({
           </article>
 
           <div className="border-t border-zinc-200">
-            <CommentSection comments={comments} user={user} />
+            <CommentSection
+              postId={build.id}
+              comments={comments}
+              user={user}
+            />
           </div>
         </div>
 

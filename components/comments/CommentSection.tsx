@@ -1,28 +1,56 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
-import { Send, User } from "lucide-react";
+import { createComment } from "@/app/actions/comments";
 import LoginDialog from "@/components/auth/LoginDialog";
-import { formatDate } from "@/lib/date";
+import CommentForm from "@/components/comments/CommentForm";
+import CommentItem from "@/components/comments/CommentItem";
 import type { BuildComment, SessionUser } from "@/types";
 
 interface CommentSectionProps {
+  // コメントを付ける作品
+  postId: string;
   // 表示するコメント
   comments: BuildComment[];
   // ログイン中のユーザー
   user: SessionUser | null;
 }
 
-// コメント入力欄とコメント一覧。
-export default function CommentSection({ comments, user }: CommentSectionProps) {
-  const [items, setItems] = useState(comments);
+// 返信フォームの対象
+interface ReplyTarget {
+  id: string;
+  nickname: string;
+  rootId: string;
+}
+
+// コメント入力欄とコメント一覧
+export default function CommentSection({
+  postId,
+  comments,
+  user,
+}: CommentSectionProps) {
   const [body, setBody] = useState("");
+  const [replyBody, setReplyBody] = useState("");
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
+  const [pending, setPending] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
-  const trimmed = body.trim();
+  // 投稿に成功したら true。失敗しても入力内容は残す
+  const submit = async (content: string, parentId: string | null) => {
+    const trimmed = content.trim();
+    if (!trimmed || pending) return false;
 
-  const handleSubmit = (event: React.FormEvent) => {
+    setPending(true);
+    try {
+      return await createComment(postId, trimmed, parentId);
+    } catch {
+      return false;
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     // 未ログイン時は送信せず、ログインダイアログを開く
@@ -31,89 +59,116 @@ export default function CommentSection({ comments, user }: CommentSectionProps) 
       return;
     }
 
-    if (!trimmed) return;
-
-    setItems((current) => [
-      ...current,
-      {
-        id: `local-${Date.now()}`,
-        body: trimmed,
-        createdAt: new Date().toISOString(),
-        author: { id: user.id, nickname: user.nickname, avatarUrl: "" },
-      },
-    ]);
+    if (!(await submit(body, null))) return;
     setBody("");
+  };
+
+  const handleReplySubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!user) {
+      setLoginOpen(true);
+      return;
+    }
+    if (!replyTarget) return;
+
+    if (!(await submit(replyBody, replyTarget.id))) return;
+    setReplyBody("");
+    setReplyTarget(null);
+  };
+
+  const toggleReply = (target: ReplyTarget) => {
+    if (!user) {
+      setLoginOpen(true);
+      return;
+    }
+
+    setReplyBody("");
+    setReplyTarget((current) => (current?.id === target.id ? null : target));
+  };
+
+  const renderReplyForm = (target: ReplyTarget) => {
+    if (replyTarget?.id !== target.id) return null;
+
+    return (
+      <div className="pt-2">
+        <CommentForm
+          compact
+          user={user}
+          value={replyBody}
+          onChange={setReplyBody}
+          onSubmit={handleReplySubmit}
+          pending={pending}
+          placeholder={`${target.nickname}さんに返信`}
+        />
+      </div>
+    );
   };
 
   return (
     <section className="p-4 sm:p-6">
-      <h2 className=" text-lg font-bold text-zinc-900">
-        コメント
-      </h2>
+      <h2 className="text-sm font-bold text-zinc-900">コメント</h2>
 
-      <form onSubmit={handleSubmit} className="mt-4 flex items-start gap-4 ">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-          <User className="h-4 w-4" />
-        </span>
-        <input
-          type="text"
+      <div className="mt-4">
+        <CommentForm
+          user={user}
           value={body}
-          onChange={(event) => setBody(event.target.value)}
+          onChange={setBody}
+          onSubmit={handleSubmit}
+          pending={pending}
           placeholder="コメントする"
-          aria-label="コメント"
-          className="min-w-0 h-11 flex-1 rounded-md bg-zinc-100 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
         />
+      </div>
 
-        <button
-          type="submit"
-          disabled={Boolean(user) && !trimmed}
-          className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:hover:bg-green-700"
-        >
-          コメント
-        </button>
-      </form>
-
-      {items.length === 0 ? (
+      {comments.length === 0 ? (
         <p className="py-10 text-center text-sm text-zinc-400">
           コメントはまだありません
         </p>
       ) : (
-        <ul className="mt-4">
-          {items.map((comment) => (
-            <li key={comment.id} className="flex gap-4 py-3">
-              {/* アバター(未設定のユーザーはアイコンを出す) */}
-              {comment.author.avatarUrl ? (
-                <Image
-                  src={comment.author.avatarUrl}
-                  alt={comment.author.nickname}
-                  width={32}
-                  height={32}
-                  className="h-11 w-11 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-                  <User className="h-4 w-4" />
-                </span>
-              )}
+        <ul className="mt-2">
+          {comments.map((thread) => {
+            const target: ReplyTarget = {
+              id: thread.id,
+              nickname: thread.author.nickname,
+              rootId: thread.id,
+            };
 
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="truncate text-sm font-bold text-zinc-900">
-                    {comment.author.nickname}
-                  </span>
-                  <time
-                    dateTime={comment.createdAt}
-                    className="shrink-0 text-sm text-zinc-500"
-                  >
-                    {formatDate(comment.createdAt)}
-                  </time>
-                </div>
-                <p className="whitespace-pre-wrap text-sm text-zinc-700">
-                  {comment.body}
-                </p>
-              </div>
-            </li>
-          ))}
+            return (
+              <li
+                key={thread.id}
+                className="border-b border-zinc-100 py-4 last:border-b-0"
+              >
+                <CommentItem
+                  comment={thread}
+                  onReply={() => toggleReply(target)}
+                  replyOpen={replyTarget?.id === target.id}
+                  replyForm={renderReplyForm(target)}
+                />
+
+                {thread.replies.length > 0 && (
+                  <div className="mt-3 ml-11 space-y-4 pl-3 sm:ml-14 sm:pl-4">
+                    {thread.replies.map((reply) => {
+                      const replyTargetItem: ReplyTarget = {
+                        id: reply.id,
+                        nickname: reply.author.nickname,
+                        rootId: thread.id,
+                      };
+
+                      return (
+                        <CommentItem
+                          key={reply.id}
+                          comment={reply}
+                          onReply={() => toggleReply(replyTargetItem)}
+                          replyOpen={replyTarget?.id === reply.id}
+                          replyForm={renderReplyForm(replyTargetItem)}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 
