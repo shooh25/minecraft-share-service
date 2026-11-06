@@ -84,7 +84,7 @@ export default async function BuildDetailPage({
 
               {/* タグ */}
               {build.tags.length > 0 && (
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm font-bold text-green-700">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm font-bold text-sky-600">
                   {build.tags.map((tag) => (
                     <Link
                       key={tag}
@@ -109,6 +109,7 @@ export default async function BuildDetailPage({
           <div className="overflow-hidden rounded-md bg-white">
             <CommentSection
               postId={build.id}
+              authorId={build.author.id}
               comments={comments}
               user={user}
             />

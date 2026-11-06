@@ -10,6 +10,8 @@ import type { BuildComment, SessionUser } from "@/types";
 interface CommentSectionProps {
   // コメントを付ける作品
   postId: string;
+  // 作品の投稿者ID
+  authorId: string;
   // 表示するコメント
   comments: BuildComment[];
   // ログイン中のユーザー
@@ -26,6 +28,7 @@ interface ReplyTarget {
 // コメント入力欄とコメント一覧
 export default function CommentSection({
   postId,
+  authorId,
   comments,
   user,
 }: CommentSectionProps) {
@@ -136,6 +139,7 @@ export default function CommentSection({
               >
                 <CommentItem
                   comment={thread}
+                  isPostAuthor={thread.author.id === authorId}
                   onReply={() => toggleReply(target)}
                   replyOpen={replyTarget?.id === target.id}
                   replyForm={renderReplyForm(target)}
@@ -154,6 +158,7 @@ export default function CommentSection({
                         <CommentItem
                           key={reply.id}
                           comment={reply}
+                          isPostAuthor={reply.author.id === authorId}
                           onReply={() => toggleReply(replyTargetItem)}
                           replyOpen={replyTarget?.id === reply.id}
                           replyForm={renderReplyForm(replyTargetItem)}

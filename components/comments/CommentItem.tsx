@@ -6,6 +6,8 @@ import type { BuildComment } from "@/types";
 
 interface CommentItemProps {
   comment: BuildComment;
+  // 作品の投稿者によるコメントか
+  isPostAuthor: boolean;
   onReply: () => void;
   // このコメントへの返信フォームを開いているか
   replyOpen: boolean;
@@ -16,6 +18,7 @@ interface CommentItemProps {
 // コメント1件
 export default function CommentItem({
   comment,
+  isPostAuthor,
   onReply,
   replyOpen,
   replyForm,
@@ -31,6 +34,11 @@ export default function CommentItem({
           <span className="truncate text-sm font-bold text-zinc-900">
             {comment.author.nickname}
           </span>
+          {isPostAuthor && (
+            <span className="inline-flex shrink-0 items-center rounded-full bg-sky-100 px-2 py-0.5 text-xs font-bold leading-none text-sky-600">
+              投稿者
+            </span>
+          )}
           <time
             dateTime={comment.createdAt}
             className="shrink-0 text-sm text-zinc-400"
@@ -42,7 +50,7 @@ export default function CommentItem({
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">
           {/* 返信先がいる場合は「@ニックネーム」を本文の前に出す */}
           {comment.parentNickname && (
-            <span className="mr-1 font-medium text-green-700">
+            <span className="mr-1 font-medium text-sky-600">
               @{comment.parentNickname}
             </span>
           )}
@@ -53,7 +61,7 @@ export default function CommentItem({
           type="button"
           onClick={onReply}
           aria-expanded={replyOpen}
-          className="cursor-pointer text-sm font-bold text-green-700 transition hover:text-green-800"
+          className="cursor-pointer text-sm font-bold text-sky-600 transition hover:text-sky-700"
         >
           {replyOpen ? "キャンセル" : "返信"}
         </button>

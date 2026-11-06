@@ -201,7 +201,7 @@ export default function Header({ user }: HeaderProps) {
                       onClick={() => selectTag(tag.name)}
                       className="flex cursor-pointer items-center px-3 py-2.5 text-sm transition-colors hover:bg-zinc-100"
                     >
-                      <span className="text-green-700">#</span>
+                      <span className="text-sky-600">#</span>
                       <span className="ml-1 truncate text-zinc-900">
                         {tag.name}
                       </span>
@@ -220,7 +220,7 @@ export default function Header({ user }: HeaderProps) {
           >
             <Link
               href="/builds/new"
-              className="inline-flex h-10 items-center justify-center gap-1 rounded-md bg-green-700 px-3.5 text-sm font-medium leading-none text-white transition hover:bg-green-800"
+              className="inline-flex h-10 items-center justify-center gap-1 rounded-md bg-sky-600 px-3.5 text-sm font-medium leading-none text-white transition hover:bg-sky-700"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">投稿する</span>

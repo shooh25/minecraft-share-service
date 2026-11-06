@@ -24,7 +24,7 @@ export default function BuildCard({ build }: BuildCardProps) {
 
         {/* アドバイス求む!付きの作品は、画像の左上に目印を出す */}
         {build.tags.includes(ADVICE_TAG) && (
-          <div className="absolute left-0 top-0 inline-flex h-7 pb-0.4 items-center rounded-tl-md rounded-br-md bg-green-700 px-3 text-sm font-medium text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+          <div className="absolute left-0 top-0 inline-flex h-7 pb-0.4 items-center rounded-tl-md rounded-br-md bg-sky-600 px-3 text-sm font-medium text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
             アドバイス求む!
           </div>
         )}

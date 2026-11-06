@@ -46,9 +46,9 @@ export default function CommentForm({
       <span
         role="presentation"
         onClick={clickable ? onSubmit : undefined}
-        className={`inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-green-700 px-4 text-sm font-medium leading-none text-white transition ${
+        className={`inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-sky-600 px-4 text-sm font-medium leading-none text-white transition ${
           clickable
-            ? "cursor-pointer hover:bg-green-800"
+            ? "cursor-pointer hover:bg-sky-700"
             : "cursor-not-allowed"
         }`}
       >
