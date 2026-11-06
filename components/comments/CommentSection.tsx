@@ -50,9 +50,7 @@ export default function CommentSection({
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
+  const handleSubmit = async () => {
     // 未ログイン時は送信せず、ログインダイアログを開く
     if (!user) {
       setLoginOpen(true);
@@ -63,9 +61,7 @@ export default function CommentSection({
     setBody("");
   };
 
-  const handleReplySubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
+  const handleReplySubmit = async () => {
     if (!user) {
       setLoginOpen(true);
       return;
