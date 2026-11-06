@@ -48,7 +48,7 @@ export default async function BuildDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-1">
           <article className="overflow-hidden rounded-md bg-white">
             {/* 画像(最初の1枚を表示し、スワイプで切り替え) */}
@@ -71,7 +71,7 @@ export default async function BuildDetailPage({
                 <button
                   type="button"
                   aria-label="共有"
-                  className="inline-flex cursor-pointer items-center text-zinc-900 transition"
+                  className="inline-flex cursor-pointer items-center text-zinc-500 transition"
                 >
                   <Share className="h-5 w-5" strokeWidth={1.8} />
                 </button>
@@ -79,7 +79,7 @@ export default async function BuildDetailPage({
 
               {/* 説明 */}
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800">
-                {build.description}こんにちはこんに
+                {build.description}こんにちはこんにこんにちはこんにこんにちはこんにこんにちはこんにこんにちはこんに
               </p>
 
               {/* タグ */}

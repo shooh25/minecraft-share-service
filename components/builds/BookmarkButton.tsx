@@ -50,7 +50,7 @@ export default function BookmarkButton({
         onClick={handleClick}
         aria-label="ブックマーク"
         aria-pressed={bookmarked}
-        className="cursor-pointer text-zinc-900 transition"
+        className="cursor-pointer text-zinc-500 transition"
       >
         <Bookmark
           className={`h-5 w-5 ${bookmarked ? "text-amber-400" : ""}`}
