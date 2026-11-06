@@ -31,7 +31,7 @@ export default function BuildCard({ build }: BuildCardProps) {
       </div>
 
       {/* 作品情報(1段目: 説明 / 2段目: 作者・いいね) */}
-      <div className="px-4 py-3 space-y-1">
+      <div className="px-4 py-3 space-y-2">
         {/* 1段目: 説明 */}
         <span className="block truncate text-sm font-bold text-zinc-900">
           {build.description}
@@ -54,7 +54,7 @@ export default function BuildCard({ build }: BuildCardProps) {
                 <User className="h-3.5 w-3.5" />
               </span>
             )}
-            <span className="truncate text-sm text-zinc-700">
+            <span className="truncate text-sm text-zinc-900">
               {build.author.nickname}
             </span>
           </div>

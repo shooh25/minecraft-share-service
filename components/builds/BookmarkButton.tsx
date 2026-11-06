@@ -53,7 +53,7 @@ export default function BookmarkButton({
         className="cursor-pointer text-zinc-900 transition"
       >
         <Bookmark
-          className={`h-6 w-6 ${bookmarked ? "text-amber-400" : ""}`}
+          className={`h-5 w-5 ${bookmarked ? "text-amber-400" : ""}`}
           fill={bookmarked ? "currentColor" : "none"}
           strokeWidth={1.8}
         />

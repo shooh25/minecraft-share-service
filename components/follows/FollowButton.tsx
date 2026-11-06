@@ -51,7 +51,7 @@ export default function FollowButton({
         onClick={handleClick}
         disabled={pending}
         aria-pressed={following}
-        className={`mt-3 inline-flex h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+        className={`mt-3 inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md text-sm font-medium leading-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
           following
             ? "bg-white text-green-700"
             : "bg-green-700 text-white hover:bg-green-800"

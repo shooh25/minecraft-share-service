@@ -117,7 +117,7 @@ export default function BuildsContent({
             <button
               key={value}
               onClick={() => handleSortChange(value)}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer ${
+              className={`inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium leading-none transition cursor-pointer ${
                 sortBy === value
                   ? "text-zinc-950"
                   : "text-zinc-500 hover:text-zinc-950"

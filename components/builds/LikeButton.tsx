@@ -53,10 +53,10 @@ export default function LikeButton({
         onClick={handleClick}
         aria-label={`いいね ${count}件`}
         aria-pressed={liked}
-        className="inline-flex cursor-pointer items-center gap-2 text-zinc-900 transition"
+        className="inline-flex cursor-pointer items-center gap-1.5 leading-none text-zinc-900 transition"
       >
         <Heart
-          className={`h-6 w-6 ${liked ? "text-rose-500" : ""}`}
+          className={`h-5 w-5 ${liked ? "text-rose-500" : ""}`}
           fill={liked ? "currentColor" : "none"}
           strokeWidth={1.8}
         />

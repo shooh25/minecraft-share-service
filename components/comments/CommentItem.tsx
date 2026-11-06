@@ -22,7 +22,7 @@ export default function CommentItem({
 }: CommentItemProps) {
   return (
     <div className="flex gap-3 sm:gap-4">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
         <User className="h-4 w-4" />
       </span>
 
@@ -33,7 +33,7 @@ export default function CommentItem({
           </span>
           <time
             dateTime={comment.createdAt}
-            className="shrink-0 text-sm text-zinc-500"
+            className="shrink-0 text-sm text-zinc-400"
           >
             {formatDate(comment.createdAt)}
           </time>

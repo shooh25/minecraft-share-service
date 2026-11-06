@@ -25,12 +25,10 @@ export default function CommentForm({
   user,
   compact = false,
 }: CommentFormProps) {
-  const size = compact ? "h-9 text-sm" : "h-11 text-sm";
-
   return (
     <form onSubmit={onSubmit} className="flex items-center gap-2 sm:gap-3">
       {!compact && (
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
           <User className="h-4 w-4" />
         </span>
       )}
@@ -41,12 +39,12 @@ export default function CommentForm({
         placeholder={placeholder}
         aria-label={placeholder}
         maxLength={500}
-        className={`min-w-0 flex-1 rounded-md bg-zinc-100 px-4 text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none ${size}`}
+        className="min-w-0 h-10 flex-1 rounded-md bg-zinc-100 px-4 text-sm text-zinc-900 placeholder-zinc-400 transition focus:bg-zinc-200 focus:outline-none"
       />
       <button
         type="submit"
         disabled={Boolean(user) && (!value.trim() || pending)}
-        className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 font-medium text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:hover:bg-green-700 ${size}`}
+        className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-md bg-green-700 px-4 text-sm font-medium leading-none text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:hover:bg-green-700"
       >
         {compact ? "返信" : "コメント"}
       </button>

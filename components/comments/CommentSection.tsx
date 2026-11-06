@@ -107,7 +107,7 @@ export default function CommentSection({
 
   return (
     <section className="p-4 sm:p-6">
-      <h2 className="text-sm font-bold text-zinc-900">コメント</h2>
+      <h2 className="text-xl font-bold text-zinc-900">コメント</h2>
 
       <div className="mt-4">
         <CommentForm

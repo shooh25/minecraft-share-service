@@ -187,7 +187,7 @@ export default function Header({ user }: HeaderProps) {
                     setSuggestOpen(true);
                   }
                 }}
-                className="w-full rounded-md bg-zinc-100 py-2.5 pl-9 pr-4 text-sm lg:text-base text-zinc-900 placeholder-zinc-400 focus:bg-zinc-200 focus:outline-none transition"
+                className="h-10 w-full rounded-md bg-zinc-100 pl-9 pr-4 text-sm lg:text-base text-zinc-900 placeholder-zinc-400 focus:bg-zinc-200 focus:outline-none transition"
               />
 
               {suggestOpen && tagSuggestions.length > 0 && (
@@ -220,7 +220,7 @@ export default function Header({ user }: HeaderProps) {
           >
             <Link
               href="/builds/new"
-              className="inline-flex h-11 items-center gap-1 rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-medium text-white transition hover:bg-green-800"
+              className="inline-flex h-10 items-center justify-center gap-1 rounded-md bg-green-700 px-3.5 text-sm font-medium leading-none text-white transition hover:bg-green-800"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">投稿する</span>
@@ -235,7 +235,7 @@ export default function Header({ user }: HeaderProps) {
                   aria-label="ユーザーメニュー"
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
-                  className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-400 transition hover:bg-zinc-200"
+                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-400 transition hover:bg-zinc-200"
                 >
                   <User className="h-5 w-5" />
                 </button>
@@ -251,7 +251,7 @@ export default function Header({ user }: HeaderProps) {
                       href={`/users/${user.id}`}
                       role="menuitem"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center px-3 py-2.5 text-sm text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex items-center px-3 py-[13px] text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
                     >
                       マイページ
                     </Link>
@@ -260,7 +260,7 @@ export default function Header({ user }: HeaderProps) {
                       role="menuitem"
                       onClick={handleLogout}
                       disabled={signingOut}
-                      className="flex w-full cursor-pointer items-center px-3 py-2.5 text-left text-sm text-zinc-900 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex w-full cursor-pointer items-center px-3 py-[13px] text-left text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       ログアウト
                     </button>
@@ -271,7 +271,7 @@ export default function Header({ user }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => setLoginOpen(true)}
-                className="inline-flex items-center justify-center rounded-md bg-zinc-100 px-3.5 py-2.5 text-sm lg:text-base font-medium text-zinc-700 hover:bg-zinc-200 transition cursor-pointer"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-100 px-3.5 text-sm leading-none lg:text-base font-medium text-zinc-700 hover:bg-zinc-200 transition cursor-pointer"
               >
                 <span>ログイン</span>
               </button>

@@ -49,14 +49,14 @@ export default async function BuildDetailPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
-        <div className="min-w-0 overflow-hidden rounded-md bg-white lg:col-start-1 lg:row-start-1">
-          <article>
+        <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-1">
+          <article className="overflow-hidden rounded-md bg-white">
             {/* 画像(最初の1枚を表示し、スワイプで切り替え) */}
             <BuildImageSlider images={build.images} alt={build.description} />
 
             <div className="space-y-2 p-4 sm:p-6 sm:pt-4">
               {/* いいね・ブックマーク・共有 */}
-              <div className="flex items-center justify-end gap-4 pb-2">
+              <div className="flex items-center justify-end gap-5 pb-2">
                 <LikeButton
                   postId={build.id}
                   count={build.likesCount}
@@ -71,20 +71,20 @@ export default async function BuildDetailPage({
                 <button
                   type="button"
                   aria-label="共有"
-                  className="cursor-pointer text-zinc-900 transition"
+                  className="inline-flex cursor-pointer items-center text-zinc-900 transition"
                 >
-                  <Share className="h-6 w-6" strokeWidth={1.8} />
+                  <Share className="h-5 w-5" strokeWidth={1.8} />
                 </button>
               </div>
 
               {/* 説明 */}
-              <p className="whitespace-pre-wrap text-base leading-relaxed text-zinc-800">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800">
                 {build.description}こんにちはこんに
               </p>
 
               {/* タグ */}
               {build.tags.length > 0 && (
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-base font-bold text-green-700">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm font-bold text-green-700">
                   {build.tags.map((tag) => (
                     <Link
                       key={tag}
@@ -98,7 +98,7 @@ export default async function BuildDetailPage({
               )}
 
               {/* 投稿日時 */}
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-zinc-400">
                 <time dateTime={build.createdAt}>
                   {formatDate(build.createdAt)}
                 </time>
@@ -106,7 +106,7 @@ export default async function BuildDetailPage({
             </div>
           </article>
 
-          <div className="border-t border-zinc-200">
+          <div className="overflow-hidden rounded-md bg-white">
             <CommentSection
               postId={build.id}
               comments={comments}
