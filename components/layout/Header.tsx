@@ -193,7 +193,7 @@ export default function Header({ user }: HeaderProps) {
               {suggestOpen && tagSuggestions.length > 0 && (
                 <ul
                   aria-label="タグ候補"
-                  className="absolute left-0 right-0 py-2 top-full z-50 mt-2 overflow-hidden rounded-md border border-zinc-200 bg-white shadow-header"
+                  className="absolute left-0 right-0 p-1 top-full z-50 mt-2 overflow-hidden rounded-md border border-zinc-200 bg-white shadow-header"
                 >
                   {tagSuggestions.map((tag) => (
                     <li
@@ -245,7 +245,7 @@ export default function Header({ user }: HeaderProps) {
                     ref={menuRef}
                     role="menu"
                     aria-label="ユーザーメニュー"
-                    className="absolute right-0 top-full z-50 mt-2 w-36 overflow-hidden rounded-md border border-zinc-200 bg-white py-2 shadow-header lg:w-44"
+                    className="absolute right-0 top-full z-50 mt-2 w-36 overflow-hidden rounded-md border border-zinc-200 bg-white p-1 shadow-header lg:w-44"
                   >
                     <Link
                       href={`/users/${user.id}`}
