@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ImageLightbox from "@/components/builds/ImageLightbox";
 
 interface BuildImageSliderProps {
   // 表示する画像
@@ -12,13 +13,14 @@ interface BuildImageSliderProps {
 }
 
 // 作品画像を横スワイプで切り替えるスライダー。
-// スワイプはスクロールスナップで、矢印ボタンとドットでも切り替えられる。
 export default function BuildImageSlider({
   images,
   alt,
 }: BuildImageSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  // 全画面表示中の画像。null なら閉じている
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const scrollToImage = (index: number) => {
     const track = trackRef.current;
@@ -35,12 +37,46 @@ export default function BuildImageSlider({
     setActiveIndex(Math.round(track.scrollLeft / track.clientWidth));
   };
 
+  // 1枚だけのときは4:3に切り抜かず、画像の比率のまま表示する
+  if (images.length === 1) {
+    return (
+      <div role="group" aria-label="作品画像" className="relative bg-zinc-900">
+        <Image
+          src={images[0]}
+          alt={alt}
+          width={0}
+          height={0}
+          sizes="(max-width: 1024px) 100vw, 1024px"
+          priority
+          className="h-auto w-full"
+        />
+        {/* 写真のクリックで全画面表示を開く */}
+        <button
+          type="button"
+          onClick={() => setLightboxIndex(0)}
+          aria-label="画像を全画面で表示"
+          className="absolute inset-0 cursor-zoom-in"
+        />
+
+        {lightboxIndex !== null && (
+          <ImageLightbox
+            images={images}
+            alt={alt}
+            index={lightboxIndex}
+            onChange={setLightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       role="group"
       aria-roledescription="カルーセル"
       aria-label="作品画像"
-      className="relative bg-zinc-100"
+      className="relative bg-zinc-900"
     >
       <div
         ref={trackRef}
@@ -61,7 +97,14 @@ export default function BuildImageSlider({
               fill
               sizes="(max-width: 1024px) 100vw, 1024px"
               priority={index === 0}
-              className="object-cover"
+              className="object-contain"
+            />
+            {/* 写真のクリックで全画面表示を開く */}
+            <button
+              type="button"
+              onClick={() => setLightboxIndex(index)}
+              aria-label={`${index + 1}枚目の画像を全画面で表示`}
+              className="absolute inset-0 cursor-zoom-in"
             />
           </div>
         ))}
@@ -105,6 +148,16 @@ export default function BuildImageSlider({
             ))}
           </div>
         </>
+      )}
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={images}
+          alt={alt}
+          index={lightboxIndex}
+          onChange={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
     </div>
   );
