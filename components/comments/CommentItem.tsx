@@ -35,7 +35,7 @@ export default function CommentItem({
             {comment.author.nickname}
           </span>
           {isPostAuthor && (
-            <span className="inline-flex shrink-0 items-center rounded-full bg-sky-100 px-2 py-0.5 text-xs font-bold leading-none text-sky-600">
+            <span className="inline-flex shrink-0 items-center rounded-sm bg-sky-100 px-1 py-1 text-xs font-medium leading-none text-sky-600">
               投稿者
             </span>
           )}
