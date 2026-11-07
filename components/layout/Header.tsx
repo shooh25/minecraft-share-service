@@ -255,6 +255,14 @@ export default function Header({ user }: HeaderProps) {
                     >
                       マイページ
                     </Link>
+                    <Link
+                      href={`/settings`}
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center px-3 py-[13px] text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
+                    >
+                      設定
+                    </Link>
                     <button
                       type="button"
                       role="menuitem"

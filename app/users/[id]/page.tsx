@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, User } from "lucide-react";
 import FollowButton from "@/components/follows/FollowButton";
@@ -87,14 +88,14 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
           {/* 右カラム */}
           <div className="flex w-24 shrink-0 justify-end sm:w-70">
             {isOwner ? (
-              <button
-                type="button"
+              <Link
+                href="/settings/profile"
                 className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-zinc-100 px-2 text-sm font-medium leading-none text-zinc-700 transition hover:bg-zinc-200 sm:w-auto sm:px-3.5"
               >
                 <Pencil className="h-4 w-4 shrink-0" />
                 <span className="sm:hidden">編集</span>
                 <span className="hidden sm:inline">プロフィールを編集</span>
-              </button>
+              </Link>
             ) : (
               <div className="w-full sm:w-40">
                 <FollowButton
