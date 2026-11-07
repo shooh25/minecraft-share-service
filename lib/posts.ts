@@ -24,7 +24,7 @@ const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:
 const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 
 // DBから作品一覧を取得する際に指定できる条件
-type PageOptions = Partial<{ tag: string | null; query: string; sortBy: SortBy; cursor: string | null; limit: number }>;
+type PageOptions = Partial<{ tag: string | null; query: string; sortBy: SortBy; cursor: string | null; limit: number; authorId: string | null }>;
 
 // DBの投稿を画面用の作品に変換する
 export function toBuild(row: PostRow): Build {
@@ -84,13 +84,14 @@ export const isValidCursor = (value: string | null, sortBy: SortBy) =>
 
 // タグ・検索語・並び順・カーソルを条件にDBを検索し、1ページ分の作品を取得する
 export async function fetchBuildsPage({
-  tag = null, query = "", sortBy = "popular", cursor = null, limit = 12,
+  tag = null, query = "", sortBy = "popular", cursor = null, limit = 12, authorId = null,
 }: PageOptions = {}): Promise<BuildPage> {
   const supabase = await createClient();
   let request = supabase
     .from("posts")
     .select(tag ? `${SELECT_COLUMNS}, tag_filter:post_tags!inner ( tags!inner ( name ) )` : SELECT_COLUMNS);
   if (tag) request = request.eq("tag_filter.tags.name", tag);
+  if (authorId) request = request.eq("author_id", authorId);
 
   const word = query.trim();
   if (word) request = request.ilike("search_text", `%${word.replace(/[\\%_]/g, "\\$&")}%`);

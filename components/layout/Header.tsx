@@ -271,7 +271,7 @@ export default function Header({ user }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => setLoginOpen(true)}
-                className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-100 px-3.5 text-sm leading-none lg:text-base font-medium text-zinc-700 hover:bg-zinc-200 transition cursor-pointer"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-100 px-3.5 text-sm leading-none lg:text-sm font-medium text-zinc-700 hover:bg-zinc-200 transition cursor-pointer"
               >
                 <span>ログイン</span>
               </button>
