@@ -25,7 +25,7 @@ export default function CommentItem({
 }: CommentItemProps) {
   return (
     <div className="flex gap-3 sm:gap-4">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
         <User className="h-4 w-4" />
       </span>
 

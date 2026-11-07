@@ -50,7 +50,7 @@ export default function BuildCard({ build }: BuildCardProps) {
                 className="h-6 w-6 rounded-full object-cover shrink-0"
               />
             ) : (
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
                 <User className="h-3.5 w-3.5" />
               </span>
             )}

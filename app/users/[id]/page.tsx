@@ -36,7 +36,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
               className="h-20 w-20 shrink-0 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
               <User className="h-8 w-8" />
             </span>
           )}

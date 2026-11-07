@@ -135,7 +135,7 @@ export default async function BuildDetailPage({
                   className="h-11 w-11 shrink-0 rounded-full object-cover"
                 />
               ) : (
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-400">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
                   <User className="h-5 w-5" />
                 </span>
               )}
