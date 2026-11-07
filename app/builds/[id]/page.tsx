@@ -132,10 +132,10 @@ export default async function BuildDetailPage({
                   alt={build.author.nickname}
                   width={40}
                   height={40}
-                  className="h-11 w-11 shrink-0 rounded-full object-cover"
+                  className="h-11 w-11 shrink-0 rounded-full border border-zinc-200 object-cover"
                 />
               ) : (
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-sky-100 text-sky-600">
                   <User className="h-5 w-5" />
                 </span>
               )}
@@ -168,7 +168,7 @@ export default async function BuildDetailPage({
             )}
 
             <h2 className="mt-4 text-sm font-bold text-zinc-900">
-              このユーザーの作品
+              このユーザーの投稿
             </h2>
             {authorPosts.length > 0 ? (
               <div className="mt-3 grid grid-cols-2 gap-2">

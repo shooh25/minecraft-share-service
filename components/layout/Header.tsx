@@ -235,7 +235,7 @@ export default function Header({ user }: HeaderProps) {
                   aria-label="ユーザーメニュー"
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
-                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-sky-100 text-sky-600 transition hover:bg-sky-200"
+                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-sky-100 text-sky-600 transition hover:bg-sky-200"
                 >
                   <User className="h-5 w-5" />
                 </button>

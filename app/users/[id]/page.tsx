@@ -34,10 +34,10 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
                 alt={profile.nickname}
                 width={80}
                 height={80}
-                className="h-20 w-20 shrink-0 rounded-full object-cover"
+                className="h-20 w-20 shrink-0 rounded-full border border-zinc-200 object-cover"
               />
             ) : (
-              <span className="flex h-22 w-22 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+              <span className="flex h-22 w-22 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-sky-100 text-sky-600">
                 <User className="h-10 w-10" />
               </span>
             )}
