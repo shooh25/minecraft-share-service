@@ -6,6 +6,9 @@ export interface UserProfile {
   nickname: string;
   avatarUrl: string;
   bio: string | null;
+  xUsername: string | null;
+  websiteUrl: string | null;
+  youtubeUrl: string | null;
 }
 
 const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
@@ -20,7 +23,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, nickname, bio")
+    .select("id, nickname, bio, x_username, website_url, youtube_url")
     .eq("id", userId)
     .maybeSingle();
   if (error) throw error;
@@ -31,5 +34,8 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
     nickname: data.nickname,
     avatarUrl: "",
     bio: data.bio,
+    xUsername: data.x_username,
+    websiteUrl: data.website_url,
+    youtubeUrl: data.youtube_url,
   };
 }

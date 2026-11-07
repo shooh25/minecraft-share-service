@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Pencil, User } from "lucide-react";
 import FollowButton from "@/components/follows/FollowButton";
+import ProfileLinks from "@/components/users/ProfileLinks";
 import UserPostsPanel from "@/components/users/UserPostsPanel";
 import { fetchCurrentUser } from "@/lib/auth";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
@@ -49,8 +50,8 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
               </span>
             )}
 
-            <div className="min-w-0 space-y-3">
-              <h1 className="truncate text-xl font-bold text-zinc-900">
+            <div className="min-w-0 space-y-2">
+              <h1 className="truncate text-2xl font-bold text-zinc-900">
                 {profile.nickname}
               </h1>
 
@@ -67,6 +68,11 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
                     {followCounts.followersCount}
                   </span>
                 </span>
+                <ProfileLinks
+                  xUsername={profile.xUsername}
+                  websiteUrl={profile.websiteUrl}
+                  youtubeUrl={profile.youtubeUrl}
+                />
               </div>
               
               {profile.bio && (
