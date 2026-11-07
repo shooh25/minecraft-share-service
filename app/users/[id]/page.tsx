@@ -1,8 +1,10 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { User } from "lucide-react";
+import { Pencil, User } from "lucide-react";
+import FollowButton from "@/components/follows/FollowButton";
 import UserPostsPanel from "@/components/users/UserPostsPanel";
-import { fetchFollowCounts } from "@/lib/follows";
+import { fetchCurrentUser } from "@/lib/auth";
+import { fetchFollowCounts, isFollowing } from "@/lib/follows";
 import { fetchBuildsPage } from "@/lib/posts";
 import { fetchProfile, isUserId } from "@/lib/users";
 
@@ -14,18 +16,23 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 
   if (!isUserId(id)) notFound();
 
-  const [profile, followCounts, page] = await Promise.all([
+  const [profile, followCounts, page, user] = await Promise.all([
     fetchProfile(id),
     fetchFollowCounts(id),
     fetchBuildsPage({ authorId: id, sortBy: "recent" }),
+    fetchCurrentUser(),
   ]);
 
   if (!profile) notFound();
 
+  const isOwner = user?.id === id;
+  const following =
+    user && !isOwner ? await isFollowing(id, user.id) : false;
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 lg:px-6">
       {/* プロフィール */}
-      <div className="rounded-md bg-white px-4 pt-6 sm:px-6 sm:pt-8">
+      <div className="rounded-md bg-white px-6 pt-6 sm:px-8 sm:pt-8">
         <section className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 gap-5 sm:gap-6">
             {profile.avatarUrl ? (
@@ -47,12 +54,6 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
                 {profile.nickname}
               </h1>
 
-              {profile.bio && (
-                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-900">
-                  {profile.bio}
-                </p>
-              )}
-
               <div className="flex items-center gap-4 text-sm text-zinc-500">
                 <span>
                   フォロー{" "}
@@ -67,11 +68,38 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
                   </span>
                 </span>
               </div>
+              
+              {profile.bio && (
+                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-900">
+                  {profile.bio}
+                </p>
+              )}
+
             </div>
           </div>
 
           {/* 右カラム */}
-          <div className="w-24 shrink-0 sm:w-70" />
+          <div className="flex w-24 shrink-0 justify-end sm:w-70">
+            {isOwner ? (
+              <button
+                type="button"
+                className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-zinc-100 px-2 text-sm font-medium leading-none text-zinc-700 transition hover:bg-zinc-200 sm:w-auto sm:px-3.5"
+              >
+                <Pencil className="h-4 w-4 shrink-0" />
+                <span className="sm:hidden">編集</span>
+                <span className="hidden sm:inline">プロフィールを編集</span>
+              </button>
+            ) : (
+              <div className="w-full sm:w-40">
+                <FollowButton
+                  userId={id}
+                  initialFollowing={following}
+                  loggedIn={Boolean(user)}
+                  variant="soft"
+                />
+              </div>
+            )}
+          </div>
         </section>
 
         {/* タブ */}

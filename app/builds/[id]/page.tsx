@@ -160,11 +160,13 @@ export default async function BuildDetailPage({
             </div>
 
             {!isOwnPost && (
-              <FollowButton
-                userId={build.author.id}
-                initialFollowing={following}
-                loggedIn={Boolean(user)}
-              />
+              <div className="mt-3">
+                <FollowButton
+                  userId={build.author.id}
+                  initialFollowing={following}
+                  loggedIn={Boolean(user)}
+                />
+              </div>
             )}
 
             <h2 className="mt-4 text-sm font-bold text-zinc-900">
