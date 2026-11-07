@@ -47,7 +47,7 @@ export default function CommentItem({
           </time>
         </div>
 
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-900">
           {/* 返信先がいる場合は「@ニックネーム」を本文の前に出す */}
           {comment.parentNickname && (
             <span className="mr-1 font-medium text-sky-600">

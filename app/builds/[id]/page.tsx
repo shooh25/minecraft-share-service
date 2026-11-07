@@ -78,7 +78,7 @@ export default async function BuildDetailPage({
               </div>
 
               {/* 説明 */}
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-900">
                 {build.description}こんにちはこんにこんにちはこんにこんにちはこんにこんにちはこんにこんにちはこんに
               </p>
 
