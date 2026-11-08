@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import Toast, { type ToastType } from "@/components/ui/Toast";
 import { updateProfile } from "@/app/actions/profiles";
 import type { ProfileFieldErrors, ProfileValues } from "@/lib/profiles";
@@ -27,6 +33,24 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
     type: ToastType;
     text: string;
   } | null>(null);
+
+  // 最後に保存された値。画面を離れたときにここへ戻す
+  const savedRef = useRef<ProfileValues>(initialProfile);
+
+  // 画面を離脱するタイミングで編集内容を破棄する
+  useLayoutEffect(() => {
+    return () => {
+      const saved = savedRef.current;
+
+      setNickname(saved.nickname);
+      setBio(saved.bio);
+      setXUsername(saved.xUsername);
+      setYoutubeUrl(saved.youtubeUrl);
+      setWebsiteUrl(saved.websiteUrl);
+      setErrors({});
+      setMessage(null);
+    };
+  }, []);
 
   const clearError = (field: keyof ProfileFieldErrors) => {
     setErrors((prev) => {
@@ -63,6 +87,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         }
 
         // 保存された正規化後の値に表示を合わせる
+        savedRef.current = result.values;
         setNickname(result.values.nickname);
         setBio(result.values.bio);
         setXUsername(result.values.xUsername);
