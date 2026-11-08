@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { Search, Plus, User } from "lucide-react";
+import { Search, Plus, User, Settings, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoginDialog from "@/components/auth/LoginDialog";
 import { createClient } from "@/lib/supabase/client";
@@ -160,7 +160,7 @@ export default function Header({ user }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white shadow-header">
+      <header className="sticky top-0 z-50 bg-white shadow-header">
         <div className="mx-auto flex h-14 lg:h-20 max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
           {/* ロゴ */}
           <Link
@@ -251,16 +251,24 @@ export default function Header({ user }: HeaderProps) {
                       href={`/users/${user.id}`}
                       role="menuitem"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center px-3 py-[13px] text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex items-center gap-2 px-3 py-[13px] text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
                     >
+                      <User
+                        className="h-4 w-4 shrink-0 text-zinc-500"
+                        aria-hidden="true"
+                      />
                       マイページ
                     </Link>
                     <Link
                       href={`/settings`}
                       role="menuitem"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center px-3 py-[13px] text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
+                      className="flex items-center gap-2 px-3 py-[13px] text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
                     >
+                      <Settings
+                        className="h-4 w-4 shrink-0 text-zinc-500"
+                        aria-hidden="true"
+                      />
                       設定
                     </Link>
                     <button
@@ -268,8 +276,12 @@ export default function Header({ user }: HeaderProps) {
                       role="menuitem"
                       onClick={handleLogout}
                       disabled={signingOut}
-                      className="flex w-full cursor-pointer items-center px-3 py-[13px] text-left text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-[13px] text-left text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
+                      <LogOut
+                        className="h-4 w-4 shrink-0 text-zinc-500"
+                        aria-hidden="true"
+                      />
                       ログアウト
                     </button>
                   </div>
