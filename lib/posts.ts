@@ -82,6 +82,24 @@ export function buildPage(rows: PostRow[], limit: number): BuildPage {
 export const isValidCursor = (value: string | null, sortBy: SortBy) =>
   cursorCondition(value, sortBy) !== null;
 
+// いいね一覧の取得位置。形式は日時_投稿ID
+export function likedCursorCondition(value: string | null): string | null {
+  const [createdAt, postId] = (value ?? "").split("_");
+  if (
+    !TIMESTAMP.test(createdAt) ||
+    Number.isNaN(Date.parse(createdAt)) ||
+    !UUID.test(postId)
+  ) {
+    return null;
+  }
+
+  return `created_at.lt.${createdAt},and(created_at.eq.${createdAt},post_id.lt.${postId})`;
+}
+
+// API が壊れたカーソルを先頭ページとして返さないようにする
+export const isValidLikedCursor = (value: string | null) =>
+  likedCursorCondition(value) !== null;
+
 // タグ・検索語・並び順・カーソルを条件にDBを検索し、1ページ分の作品を取得する
 export async function fetchBuildsPage({
   tag = null, query = "", sortBy = "popular", cursor = null, limit = 12, authorId = null,
@@ -109,6 +127,54 @@ export async function fetchBuildsPage({
   if (error) throw error;
 
   return buildPage((data ?? []) as unknown as PostRow[], limit);
+}
+
+// likes と posts を結合して取得したときの1行分
+interface LikedPostRow {
+  created_at: string;
+  post_id: string;
+  posts: PostRow | null;
+}
+
+// いいねした日時の新しい順に、1ページ分の作品を取得する
+export async function fetchLikedBuildsPage({
+  userId,
+  cursor = null,
+  limit = 12,
+}: {
+  // 一覧を取得するユーザー
+  userId: string;
+  cursor?: string | null;
+  limit?: number;
+}): Promise<BuildPage> {
+  const supabase = await createClient();
+  const condition = likedCursorCondition(cursor);
+
+  let request = supabase
+    .from("likes")
+    .select(`created_at, post_id, posts!inner ( ${SELECT_COLUMNS} )`)
+    .eq("user_id", userId);
+  if (condition) request = request.or(condition);
+
+  // 次ページがあるか知るために1件多く取る
+  const { data, error } = await request
+    .order("created_at", { ascending: false })
+    .order("post_id", { ascending: false })
+    .limit(limit + 1);
+  if (error) throw error;
+
+  const rows = (data ?? []) as unknown as LikedPostRow[];
+  const last = rows[limit - 1];
+
+  return {
+    builds: rows
+      .slice(0, limit)
+      .flatMap((row) => (row.posts ? [toBuild(row.posts)] : [])),
+    nextCursor:
+      rows.length > limit && last
+        ? `${last.created_at}_${last.post_id}`
+        : null,
+  };
 }
 
 // 投稿を1件取得する(見つからなければ null)

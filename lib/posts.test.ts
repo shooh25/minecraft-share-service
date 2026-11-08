@@ -5,6 +5,8 @@ import {
   cursorCondition,
   fetchBuildsPage,
   isValidCursor,
+  isValidLikedCursor,
+  likedCursorCondition,
   toBuild,
   type PostRow,
 } from "@/lib/posts";
@@ -161,6 +163,35 @@ describe("isValidCursor: カーソルの形式判定", () => {
 
   it("壊れた形式なら false", () => {
     expect(isValidCursor("broken", "recent")).toBe(false);
+  });
+});
+
+describe("likedCursorCondition: いいね一覧のカーソル", () => {
+  it("日時と投稿IDで条件を作る", () => {
+    expect(likedCursorCondition(`${CREATED_AT}_${ID}`)).toBe(
+      `created_at.lt.${CREATED_AT},and(created_at.eq.${CREATED_AT},post_id.lt.${ID})`,
+    );
+  });
+
+  it("カーソルが無ければ条件を返さない", () => {
+    expect(likedCursorCondition(null)).toBeNull();
+    expect(likedCursorCondition("")).toBeNull();
+  });
+
+  it("壊れたカーソルは条件を返さない", () => {
+    for (const value of [
+      "broken",
+      CREATED_AT,
+      `not-a-date_${ID}`,
+      `${CREATED_AT}_not-a-uuid`,
+    ]) {
+      expect(likedCursorCondition(value)).toBeNull();
+    }
+  });
+
+  it("isValidLikedCursor は空を無効にする", () => {
+    expect(isValidLikedCursor(null)).toBe(false);
+    expect(isValidLikedCursor(`${CREATED_AT}_${ID}`)).toBe(true);
   });
 });
 

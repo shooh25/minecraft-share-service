@@ -7,21 +7,23 @@ import ProfileLinks from "@/components/users/ProfileLinks";
 import UserPostsPanel from "@/components/users/UserPostsPanel";
 import { fetchCurrentUser } from "@/lib/auth";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
-import { fetchBuildsPage } from "@/lib/posts";
+import { fetchBuildsPage, fetchLikedBuildsPage } from "@/lib/posts";
 import { fetchProfile, isUserId } from "@/lib/users";
 
 export const instant = false;
 
 // ユーザーページ
-export default async function UserPage({ params }: PageProps<"/users/[id]">) {
+export default async function UserPage({
+  params,
+  searchParams,
+}: PageProps<"/users/[id]">) {
   const { id } = await params;
 
   if (!isUserId(id)) notFound();
 
-  const [profile, followCounts, page, user] = await Promise.all([
+  const [profile, followCounts, user] = await Promise.all([
     fetchProfile(id),
     fetchFollowCounts(id),
-    fetchBuildsPage({ authorId: id, sortBy: "recent" }),
     fetchCurrentUser(),
   ]);
 
@@ -30,6 +32,23 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
   const isOwner = user?.id === id;
   const following =
     user && !isOwner ? await isFollowing(id, user.id) : false;
+
+  // 自分のページでは「いいね」タブも開ける
+  const { tab: tabParam } = await searchParams;
+  const tab = isOwner && tabParam === "likes" ? "likes" : "posts";
+
+  // 表示中のタブの1ページ目だけを取得する
+  const page =
+    tab === "likes"
+      ? await fetchLikedBuildsPage({ userId: id })
+      : await fetchBuildsPage({ authorId: id, sortBy: "recent" });
+
+  const tabs = [
+    { key: "posts", label: "投稿", href: `/users/${id}` },
+    ...(isOwner
+      ? [{ key: "likes", label: "いいね", href: `/users/${id}?tab=likes` }]
+      : []),
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 lg:px-6">
@@ -111,15 +130,28 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 
         {/* タブ */}
         <div className="mt-6 flex items-center gap-6">
-          <span className="inline-flex h-11 items-center border-b-2 border-sky-600 px-1 text-sm font-bold text-sky-600">
-            投稿
-          </span>
+          {tabs.map((item) => (
+            <Link
+              key={item.key}
+              href={item.href}
+              aria-current={tab === item.key ? "page" : undefined}
+              className={`inline-flex h-11 items-center border-b-2 px-1 text-sm transition ${
+                tab === item.key
+                  ? "border-sky-600 font-bold text-sky-600"
+                  : "border-transparent text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* 投稿一覧 */}
+      {/* 投稿・いいね一覧 */}
       <UserPostsPanel
+        key={tab}
         userId={id}
+        tab={tab}
         initialBuilds={page.builds}
         initialNextCursor={page.nextCursor}
       />
