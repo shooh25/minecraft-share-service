@@ -1,11 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-// ブックマークの登録・解除。成功したら true、未ログインなら false を返す。
-export async function setBookmarked(
+// 投稿をコレクションへ保存する。成功したら true、未ログインなら false を返す。
+export async function savePostToCollection(
   postId: string,
-  bookmarked: boolean,
+  collectionId: string,
 ): Promise<boolean> {
   // Server Action は直接 POST でも呼べるため、サーバー側でも認証を確認する
   const supabase = await createClient();
@@ -15,23 +16,18 @@ export async function setBookmarked(
 
   if (!user) return false;
 
-  if (bookmarked) {
-    // 二重ブックマークは主キーで弾く(すでに登録済みなら何もしない)
-    const { error } = await supabase
-      .from("bookmarks")
-      .upsert(
-        { post_id: postId, user_id: user.id },
-        { onConflict: "post_id,user_id", ignoreDuplicates: true },
-      );
-    if (error) throw error;
-  } else {
-    const { error } = await supabase
-      .from("bookmarks")
-      .delete()
-      .eq("post_id", postId)
-      .eq("user_id", user.id);
-    if (error) throw error;
-  }
+  // 自分のコレクションにだけ追加できる(RLS・複合外部キーでも検証される)。
+  // すでに入っている場合は主キーで弾く。
+  const { error } = await supabase.from("collection_clips").upsert(
+    {
+      collection_id: collectionId,
+      user_id: user.id,
+      post_id: postId,
+    },
+    { onConflict: "collection_id,post_id", ignoreDuplicates: true },
+  );
+  if (error) throw error;
 
+  revalidatePath(`/builds/${postId}`);
   return true;
 }

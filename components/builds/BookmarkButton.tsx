@@ -1,27 +1,38 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useState } from "react";
 import { Bookmark } from "lucide-react";
-import { setBookmarked as saveBookmark } from "@/app/actions/bookmarks";
+import CollectionPickerDialog from "@/components/builds/CollectionPickerDialog";
 import LoginDialog from "@/components/auth/LoginDialog";
+import type { Collection } from "@/lib/bookmarks";
 
 interface BookmarkButtonProps {
   postId: string;
-  // ログイン中のユーザーがすでにブックマークしているか
-  initialBookmarked: boolean;
+  // その投稿が保存されているコレクションのID達
+  initialSavedCollectionIds: string[];
+  // ログイン中のユーザーのコレクション
+  collections: Collection[];
   // ログインしているか
   loggedIn: boolean;
 }
 
-// ブックマークボタン。未ログイン時は押すとログインダイアログを開く。
+// ブックマークボタン
 export default function BookmarkButton({
   postId,
-  initialBookmarked,
+  initialSavedCollectionIds,
+  collections,
   loggedIn,
 }: BookmarkButtonProps) {
-  const [bookmarked, setBookmarked] = useState(initialBookmarked);
+  const [savedIds, setSavedIds] = useState(initialSavedCollectionIds);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [, startTransition] = useTransition();
+
+  const closeDialog = useCallback(() => setDialogOpen(false), []);
+  const handleSaved = useCallback((collectionId: string) => {
+    setSavedIds((prev) =>
+      prev.includes(collectionId) ? prev : [...prev, collectionId],
+    );
+  }, []);
 
   const handleClick = () => {
     if (!loggedIn) {
@@ -29,27 +40,21 @@ export default function BookmarkButton({
       return;
     }
 
-    const next = !bookmarked;
-    // 先に表示を切り替え、失敗したら元に戻す
-    setBookmarked(next);
-
-    startTransition(async () => {
-      try {
-        const saved = await saveBookmark(postId, next);
-        if (!saved) setBookmarked(!next);
-      } catch {
-        setBookmarked(!next);
-      }
-    });
+    setDialogOpen(true);
   };
+
+  // いずれかのコレクションに入っていれば保存済み
+  const bookmarked = savedIds.length > 0;
 
   return (
     <>
       <button
         type="button"
         onClick={handleClick}
-        aria-label="ブックマーク"
-        aria-pressed={bookmarked}
+        aria-label={
+          bookmarked ? "コレクションに保存済み" : "コレクションに保存"
+        }
+        aria-haspopup="dialog"
         className="cursor-pointer text-zinc-500 transition"
       >
         <Bookmark
@@ -58,6 +63,15 @@ export default function BookmarkButton({
           strokeWidth={1.8}
         />
       </button>
+
+      <CollectionPickerDialog
+        open={dialogOpen}
+        postId={postId}
+        collections={collections}
+        savedIds={savedIds}
+        onClose={closeDialog}
+        onSaved={handleSaved}
+      />
 
       <LoginDialog
         open={loginOpen}

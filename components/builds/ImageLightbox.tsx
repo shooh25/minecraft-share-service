@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface ImageLightboxProps {
@@ -25,38 +25,14 @@ export default function ImageLightbox({
   onChange,
   onClose,
 }: ImageLightboxProps) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeRef.current?.focus();
 
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (event.key === "ArrowLeft" && index > 0) {
-        onChange(index - 1);
-      }
-      if (event.key === "ArrowRight" && index < images.length - 1) {
-        onChange(index + 1);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [index, images.length, onChange, onClose]);
 
   return (
     <div
@@ -84,7 +60,6 @@ export default function ImageLightbox({
       </div>
 
       <button
-        ref={closeRef}
         type="button"
         onClick={onClose}
         aria-label="閉じる"

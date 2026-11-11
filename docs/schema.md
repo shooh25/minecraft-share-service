@@ -110,6 +110,38 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 - フォロー関係の SELECT は本人が関係する行のみ（自分がフォローした相手・自分をフォローした相手）。他のユーザーのフォロー／フォロワーの内訳は取得できない。未ログインには `follow_counts(uuid)`（security definer）で**フォロー数・フォロワー数だけ**返す
 - フォロー解除は行の DELETE のみ（UPDATE なし）
 
+## clips
+
+| カラム | 型 | 説明 |
+|---|---|---|
+| post_id | uuid | FK → posts.id, ON DELETE CASCADE / 主キーは (post_id, user_id) の組 |
+| user_id | uuid | FK → profiles.id, ON DELETE CASCADE |
+| created_at | timestamptz | NOT NULL, 初期 now() |
+
+- 保存（クリップ）した作品
+
+## collections
+
+| カラム | 型 | 説明 |
+|---|---|---|
+| id | uuid | PK, 自動生成 |
+| user_id | uuid | FK → profiles.id, ON DELETE CASCADE。作成者 |
+| name | text | NOT NULL。前後の空白を除いて1〜50文字。重複可 |
+| created_at | timestamptz | NOT NULL, 初期 now() |
+
+- ユーザーが作るコレクション。`(id, user_id)` の UNIQUE を複合外部キーから参照する
+
+## collection_clips
+
+| カラム | 型 | 説明 |
+|---|---|---|
+| collection_id | uuid | FK → collections(id, user_id), ON DELETE CASCADE / 主キーは (collection_id, post_id) の組 |
+| user_id | uuid | FK → profiles.id, ON DELETE CASCADE。コレクションの所有者 |
+| post_id | uuid | FK → clips(post_id, user_id), ON DELETE CASCADE |
+| created_at | timestamptz | NOT NULL, 初期 now() |
+
+- 1つの作品を複数のコレクションに入れられる
+
 ## 関数
 
 | 関数 | 用途 |
@@ -127,8 +159,12 @@ INSERT / UPDATE 時にメタデータ（`raw_user_meta_data` / `identity_data`�
 | post_comments | 全員 | 認証済み かつ ニックネーム設定済み（`user_id = auth.uid()`） | DELETE 本人または作品作者（UPDATE なし） |
 | likes | 本人 | 認証済み（`user_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
 | follows | 本人が関係する行のみ | 認証済み（`follower_id = auth.uid()`） | DELETE 本人（UPDATE なし） |
+| clips | 本人 | なし（コレクション追加時にトリガーで自動作成） | DELETE 本人（UPDATE なし） |
+| collections | 本人 | 認証済み（`user_id = auth.uid()`、`name` のみ） | UPDATE 本人（`name` のみ）/ DELETE 本人 |
+| collection_clips | 本人 | 認証済み（`collection_id` / `user_id` / `post_id` のみ） | DELETE 本人（UPDATE なし） |
 | tags | 全員 | なし（追加は運営側が service_role で行う） | 未使用 |
 
-- 投稿・タグ付け・いいね・フォローの INSERT は `auth.uid()` と所有者の一致を条件にする。
+- 投稿・タグ付け・いいね・フォロー・コレクション追加の INSERT は `auth.uid()` と所有者の一致を条件にする。
+- クリップ・コレクション・所属は本人のみ参照でき、未ログインには権限を与えない。
 - 未ログインのフォロー数・フォロワー数は `follow_counts(uuid)` を経由して取得する（`follows` 自体は読めない）。
 - テーブル権限は各マイグレーションで明示的に GRANT / REVOKE する。

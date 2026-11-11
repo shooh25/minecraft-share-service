@@ -9,7 +9,7 @@ import LikeButton from "@/components/builds/LikeButton";
 import CommentSection from "@/components/comments/CommentSection";
 import FollowButton from "@/components/follows/FollowButton";
 import { fetchCurrentUser } from "@/lib/auth";
-import { isPostBookmarked } from "@/lib/bookmarks";
+import { fetchCollections, fetchPostCollectionIds } from "@/lib/bookmarks";
 import { fetchComments } from "@/lib/comments";
 import { formatDate } from "@/lib/date";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
@@ -34,16 +34,23 @@ export default async function BuildDetailPage({
   const comments = await fetchComments(build.id);
   // 自分の投稿にはフォローボタンを出さない
   const isOwnPost = user?.id === build.author.id;
-  const [authorPosts, liked, bookmarked, following, followCounts] =
-    await Promise.all([
-      fetchAuthorPosts(build.author.id, build.id),
-      user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
-      user ? isPostBookmarked(build.id, user.id) : Promise.resolve(false),
-      user && !isOwnPost
-        ? isFollowing(build.author.id, user.id)
-        : Promise.resolve(false),
-      fetchFollowCounts(build.author.id),
-    ]);
+  const [
+    authorPosts,
+    liked,
+    collections,
+    savedCollectionIds,
+    following,
+    followCounts,
+  ] = await Promise.all([
+    fetchAuthorPosts(build.author.id, build.id),
+    user ? isPostLiked(build.id, user.id) : Promise.resolve(false),
+    user ? fetchCollections(user.id) : Promise.resolve([]),
+    user ? fetchPostCollectionIds(build.id, user.id) : Promise.resolve([]),
+    user && !isOwnPost
+      ? isFollowing(build.author.id, user.id)
+      : Promise.resolve(false),
+    fetchFollowCounts(build.author.id),
+  ]);
   const related = await fetchRelatedPostsPage(build.id);
 
   return (
@@ -65,7 +72,8 @@ export default async function BuildDetailPage({
                 />
                 <BookmarkButton
                   postId={build.id}
-                  initialBookmarked={bookmarked}
+                  initialSavedCollectionIds={savedCollectionIds}
+                  collections={collections}
                   loggedIn={Boolean(user)}
                 />
                 <button
