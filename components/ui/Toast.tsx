@@ -39,7 +39,7 @@ export default function Toast({
   if (!message) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-24 z-[60] flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 top-24 z-[110] flex justify-center px-4">
       <div
         role={type === "error" ? "alert" : "status"}
         className={`animate-toast-in inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-white shadow-lg ${

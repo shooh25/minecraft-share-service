@@ -120,7 +120,7 @@ export default function CommentSection({
       </div>
 
       {comments.length === 0 ? (
-        <p className="py-10 text-center text-sm text-zinc-400">
+        <p className="py-10 text-center text-sm text-zinc-500">
           コメントはまだありません
         </p>
       ) : (

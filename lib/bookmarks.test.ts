@@ -18,41 +18,90 @@ type FakeChain = {
   select: () => FakeChain;
   eq: () => FakeChain;
   order: () => FakeChain;
+  in: () => FakeChain;
   then: (
     resolve: (value: FakeResult) => unknown,
     reject?: (reason: unknown) => unknown,
   ) => Promise<unknown>;
 };
 
-// クエリの結果だけを返すSupabaseクライアントの代わり
-function fakeClient(result: FakeResult) {
+// テーブルごとの結果を返すSupabaseクライアントの代わり
+function fakeClient(results: Record<string, FakeResult>) {
+  let table = "";
+
   const chain: FakeChain = {
     select: () => chain,
     eq: () => chain,
     order: () => chain,
-    then: (resolve, reject) => Promise.resolve(result).then(resolve, reject),
+    in: () => chain,
+    then: (resolve, reject) =>
+      Promise.resolve(
+        results[table] ?? { data: null, error: null },
+      ).then(resolve, reject),
   };
 
-  return { from: () => chain };
+  return {
+    from: (name: string) => {
+      table = name;
+      return chain;
+    },
+  };
 }
 
 describe("fetchCollections: コレクション一覧", () => {
   it("取得したコレクションを返す", async () => {
     vi.mocked(createClient).mockResolvedValue(
       fakeClient({
-        data: [{ id: "collection-1", name: "保存した作品" }],
-        error: null,
+        collections: {
+          data: [{ id: "collection-1", name: "保存した作品" }],
+          error: null,
+        },
+        collection_clips: {
+          data: [{ collection_id: "collection-1", post_id: "post-1" }],
+          error: null,
+        },
+        posts: {
+          data: [
+            {
+              id: "post-1",
+              images: ["https://example.com/cover.jpg"],
+            },
+          ],
+          error: null,
+        },
       }) as never,
     );
 
     await expect(fetchCollections(USER_ID)).resolves.toEqual([
-      { id: "collection-1", name: "保存した作品" },
+      {
+        id: "collection-1",
+        name: "保存した作品",
+        coverUrl: "https://example.com/cover.jpg",
+      },
+    ]);
+  });
+
+  it("作品が入っていなければサムネイルは null", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      fakeClient({
+        collections: {
+          data: [{ id: "collection-1", name: "保存した作品" }],
+          error: null,
+        },
+        collection_clips: { data: [], error: null },
+      }) as never,
+    );
+
+    await expect(fetchCollections(USER_ID)).resolves.toEqual([
+      { id: "collection-1", name: "保存した作品", coverUrl: null },
     ]);
   });
 
   it("コレクションがなければ空配列", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      fakeClient({ data: null, error: null }) as never,
+      fakeClient({
+        collections: { data: null, error: null },
+      }) as never,
     );
 
     await expect(fetchCollections(USER_ID)).resolves.toEqual([]);
@@ -60,7 +109,9 @@ describe("fetchCollections: コレクション一覧", () => {
 
   it("DBエラーはそのまま投げる", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      fakeClient({ data: null, error: { message: "boom" } }) as never,
+      fakeClient({
+        collections: { data: null, error: { message: "boom" } },
+      }) as never,
     );
 
     await expect(fetchCollections(USER_ID)).rejects.toEqual({
@@ -73,11 +124,13 @@ describe("fetchPostCollectionIds: 投稿が入っているコレクション", (
   it("コレクションIDだけを返す", async () => {
     vi.mocked(createClient).mockResolvedValue(
       fakeClient({
-        data: [
-          { collection_id: "collection-1" },
-          { collection_id: "collection-2" },
-        ],
-        error: null,
+        collection_clips: {
+          data: [
+            { collection_id: "collection-1" },
+            { collection_id: "collection-2" },
+          ],
+          error: null,
+        },
       }) as never,
     );
 
@@ -89,7 +142,9 @@ describe("fetchPostCollectionIds: 投稿が入っているコレクション", (
 
   it("どのコレクションにも入っていなければ空配列", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      fakeClient({ data: [], error: null }) as never,
+      fakeClient({
+        collection_clips: { data: [], error: null },
+      }) as never,
     );
 
     await expect(fetchPostCollectionIds(POST_ID, USER_ID)).resolves.toEqual([]);
@@ -97,7 +152,9 @@ describe("fetchPostCollectionIds: 投稿が入っているコレクション", (
 
   it("DBエラーはそのまま投げる", async () => {
     vi.mocked(createClient).mockResolvedValue(
-      fakeClient({ data: null, error: { message: "boom" } }) as never,
+      fakeClient({
+        collection_clips: { data: null, error: { message: "boom" } },
+      }) as never,
     );
 
     await expect(fetchPostCollectionIds(POST_ID, USER_ID)).rejects.toEqual({

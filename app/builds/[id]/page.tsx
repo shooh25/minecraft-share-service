@@ -61,9 +61,9 @@ export default async function BuildDetailPage({
             {/* 画像(最初の1枚を表示し、スワイプで切り替え) */}
             <BuildImageSlider images={build.images} alt={build.description} />
 
-            <div className="space-y-2 p-4 sm:p-6 sm:pt-4">
+            <div className="space-y-2 p-4 sm:p-6 sm:pt-2">
               {/* いいね・ブックマーク・共有 */}
-              <div className="flex items-center justify-end gap-5 pb-2">
+              <div className="flex items-center justify-end">
                 <LikeButton
                   postId={build.id}
                   count={build.likesCount}
@@ -79,7 +79,7 @@ export default async function BuildDetailPage({
                 <button
                   type="button"
                   aria-label="共有"
-                  className="inline-flex cursor-pointer items-center text-zinc-500 transition"
+                  className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100"
                 >
                   <Share className="h-5 w-5" strokeWidth={1.8} />
                 </button>

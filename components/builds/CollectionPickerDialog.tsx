@@ -1,8 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useTransition } from "react";
-import { Check, X } from "lucide-react";
-import { savePostToCollection } from "@/app/actions/bookmarks";
+import { Bookmark, Layers, X } from "lucide-react";
+import {
+  removePostFromCollection,
+  savePostToCollection,
+} from "@/app/actions/bookmarks";
 import { useDialogScrollLock } from "@/components/ui/useDialogScrollLock";
 import type { Collection } from "@/lib/bookmarks";
 
@@ -14,8 +18,8 @@ interface CollectionPickerDialogProps {
   // その投稿が保存されているコレクションのID
   savedIds: string[];
   onClose: () => void;
-  // 保存できたコレクションのIDを受け取る
-  onSaved: (collectionId: string) => void;
+  // 保存状態が変わったときに、そのコレクションのIDと新しい状態を受け取る
+  onSavedChange: (collectionId: string, saved: boolean) => void;
 }
 
 // 投稿を保存するコレクションを選ぶダイアログ
@@ -25,9 +29,8 @@ export default function CollectionPickerDialog({
   collections,
   savedIds,
   onClose,
-  onSaved,
+  onSavedChange,
 }: CollectionPickerDialogProps) {
-  const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -35,25 +38,22 @@ export default function CollectionPickerDialog({
 
   if (!open) return null;
 
-  const handleSave = (collectionId: string) => {
-    if (savingId) return;
-
-    setSavingId(collectionId);
+  const handleToggle = (collectionId: string, saved: boolean) => {
     setError(false);
 
     startTransition(async () => {
       try {
-        const saved = await savePostToCollection(postId, collectionId);
-        if (!saved) {
+        const changed = saved
+          ? await removePostFromCollection(postId, collectionId)
+          : await savePostToCollection(postId, collectionId);
+        if (!changed) {
           setError(true);
           return;
         }
 
-        onSaved(collectionId);
+        onSavedChange(collectionId, !saved);
       } catch {
         setError(true);
-      } finally {
-        setSavingId(null);
       }
     });
   };
@@ -83,13 +83,13 @@ export default function CollectionPickerDialog({
             type="button"
             onClick={onClose}
             aria-label="閉じる"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="max-h-80 overflow-y-auto pt-3">
+        <div className="max-h-80 overflow-y-auto pt-4">
           {collections.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-zinc-500">
               コレクションがありません
@@ -98,36 +98,50 @@ export default function CollectionPickerDialog({
             <ul className="space-y-1">
               {collections.map((collection) => {
                 const saved = savedIds.includes(collection.id);
-                const saving = savingId === collection.id;
 
                 return (
                   <li
                     key={collection.id}
-                    className="flex items-center gap-3 rounded-md hover:bg-zinc-50"
+                    className="flex items-center gap-3 rounded-md"
                   >
-                    <span className="min-w-0 flex-1 truncate text-sm text-zinc-900">
+                    <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-zinc-100">
+                      {collection.coverUrl ? (
+                        <Image
+                          src={collection.coverUrl}
+                          alt=""
+                          fill
+                          sizes="60px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-zinc-400">
+                          <Layers className="h-4 w-4" />
+                        </span>
+                      )}
+                    </span>
+
+                    <span className="min-w-0 flex-1 truncate font-bold text-sm text-zinc-900">
                       {collection.name}
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleSave(collection.id)}
-                      disabled={saved || Boolean(savingId)}
-                      className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-3 text-xs font-bold transition ${
+                      onClick={() => handleToggle(collection.id, saved)}
+                      aria-label={
                         saved
-                          ? "bg-zinc-100 text-zinc-400"
-                          : "bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-60"
+                          ? `${collection.name}から保存を解除`
+                          : `${collection.name}に保存`
+                      }
+                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md cursor-pointer transition ${
+                        saved
+                          ? "text-sky-600 hover:bg-zinc-100"
+                          : "text-zinc-500 hover:bg-zinc-100"
                       }`}
                     >
-                      {saved ? (
-                        <>
-                          <Check className="h-3.5 w-3.5" />
-                          保存済み
-                        </>
-                      ) : saving ? (
-                        "保存中..."
-                      ) : (
-                        "保存"
-                      )}
+                      <Bookmark
+                        className="h-5 w-5"
+                        fill={saved ? "currentColor" : "none"}
+                        strokeWidth={1.8}
+                      />
                     </button>
                   </li>
                 );
@@ -137,7 +151,7 @@ export default function CollectionPickerDialog({
 
           {error && (
             <p role="alert" className="px-3 pt-2 text-sm text-red-600">
-              保存に失敗しました。もう一度お試しください。
+              保存状態を変更できませんでした。もう一度お試しください。
             </p>
           )}
         </div>

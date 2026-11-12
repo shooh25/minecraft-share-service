@@ -31,3 +31,30 @@ export async function savePostToCollection(
   revalidatePath(`/builds/${postId}`);
   return true;
 }
+
+// 投稿をコレクションから外す。成功したら true、未ログインなら false を返す。
+export async function removePostFromCollection(
+  postId: string,
+  collectionId: string,
+): Promise<boolean> {
+  // Server Action は直接 POST でも呼べるため、サーバー側でも認証を確認する
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  // 自分のコレクションの所属だけを削除する。
+  // 最後の所属が消えたらトリガーで clips も削除される。
+  const { error } = await supabase
+    .from("collection_clips")
+    .delete()
+    .eq("collection_id", collectionId)
+    .eq("user_id", user.id)
+    .eq("post_id", postId);
+  if (error) throw error;
+
+  revalidatePath(`/builds/${postId}`);
+  return true;
+}
