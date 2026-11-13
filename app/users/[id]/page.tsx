@@ -109,7 +109,7 @@ export default async function UserPage({
             {isOwner ? (
               <Link
                 href="/settings/profile"
-                className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 border border-zinc-200 rounded-md bg-zinc-100 px-2 text-sm font-medium leading-none text-zinc-700 transition hover:bg-zinc-200 sm:w-auto sm:px-3.5"
+                className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 border border-zinc-200 rounded-md px-2 text-sm font-medium leading-none text-zinc-700 transition hover:bg-zinc-100 sm:w-auto sm:px-3.5"
               >
                 <Pencil className="h-4 w-4 shrink-0" />
                 <span className="sm:hidden">編集</span>

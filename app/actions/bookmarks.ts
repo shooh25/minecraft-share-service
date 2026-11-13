@@ -58,3 +58,32 @@ export async function removePostFromCollection(
   revalidatePath(`/builds/${postId}`);
   return true;
 }
+
+// コレクションを作成する。成功したら作成したコレクション、未ログインなら null を返す。
+export async function createCollection(
+  name: string,
+): Promise<{ id: string; name: string } | null> {
+  // Server Action は直接 POST でも呼べるため、サーバー側でも認証を確認する
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  // 前後の空白を除き、DBの制約(1〜50文字)に合わせて検証する
+  const trimmed = name.trim();
+  if (trimmed.length === 0 || trimmed.length > 50) return null;
+
+  const { data, error } = await supabase
+    .from("collections")
+    .insert({ user_id: user.id, name: trimmed })
+    .select("id, name")
+    .single();
+  if (error) throw error;
+
+  // コレクション一覧を表示する投稿詳細ページを次回表示時に更新する
+  t("/builds/[id]", "page");
+
+  return data;
+}

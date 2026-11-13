@@ -25,11 +25,20 @@ export default function BookmarkButton({
   loggedIn,
 }: BookmarkButtonProps) {
   const [savedIds, setSavedIds] = useState(initialSavedCollectionIds);
+  const [collectionList, setCollectionList] = useState(collections);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const closeDialog = useCallback(() => setDialogOpen(false), []);
+  const handleCollectionCreated = useCallback((collection: Collection) => {
+    setCollectionList((prev) =>
+      prev.some((item) => item.id === collection.id)
+        ? prev
+        : [...prev, collection],
+    );
+    setToast("コレクションを作成しました");
+  }, []);
   const handleSavedChange = useCallback(
     (collectionId: string, saved: boolean) => {
       setSavedIds((prev) => {
@@ -84,10 +93,11 @@ export default function BookmarkButton({
       <CollectionPickerDialog
         open={dialogOpen}
         postId={postId}
-        collections={collections}
+        collections={collectionList}
         savedIds={savedIds}
         onClose={closeDialog}
         onSavedChange={handleSavedChange}
+        onCollectionCreated={handleCollectionCreated}
       />
 
       <LoginDialog
