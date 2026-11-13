@@ -71,7 +71,11 @@ export default function CollectionPickerDialog({
           return;
         }
 
-        onCollectionCreated({ ...created, coverUrl: null });
+        onCollectionCreated({
+          ...created,
+          coverUrl: null,
+          clipCount: 0,
+        });
         setCreating(false);
         setName("");
       } catch {

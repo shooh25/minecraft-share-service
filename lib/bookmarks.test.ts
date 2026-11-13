@@ -57,7 +57,10 @@ describe("fetchCollections: コレクション一覧", () => {
           error: null,
         },
         collection_clips: {
-          data: [{ collection_id: "collection-1", post_id: "post-1" }],
+          data: [
+            { collection_id: "collection-1", post_id: "post-1" },
+            { collection_id: "collection-1", post_id: "post-2" },
+          ],
           error: null,
         },
         posts: {
@@ -65,6 +68,10 @@ describe("fetchCollections: コレクション一覧", () => {
             {
               id: "post-1",
               images: ["https://example.com/cover.jpg"],
+            },
+            {
+              id: "post-2",
+              images: ["https://example.com/second.jpg"],
             },
           ],
           error: null,
@@ -77,6 +84,7 @@ describe("fetchCollections: コレクション一覧", () => {
         id: "collection-1",
         name: "保存した作品",
         coverUrl: "https://example.com/cover.jpg",
+        clipCount: 2,
       },
     ]);
   });
@@ -93,7 +101,12 @@ describe("fetchCollections: コレクション一覧", () => {
     );
 
     await expect(fetchCollections(USER_ID)).resolves.toEqual([
-      { id: "collection-1", name: "保存した作品", coverUrl: null },
+      {
+        id: "collection-1",
+        name: "保存した作品",
+        coverUrl: null,
+        clipCount: 0,
+      },
     ]);
   });
 

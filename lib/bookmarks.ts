@@ -6,6 +6,8 @@ export interface Collection {
   name: string;
   // 最初に保存した作品の画像。作品がなければ null
   coverUrl: string | null;
+  // コレクションに入っている作品数
+  clipCount: number;
 }
 
 // ユーザーのコレクション一覧
@@ -32,7 +34,12 @@ export async function fetchCollections(userId: string): Promise<Collection[]> {
   if (membershipError) throw membershipError;
 
   const coverPostIds = new Map<string, string>();
+  const clipCounts = new Map<string, number>();
   for (const membership of memberships ?? []) {
+    clipCounts.set(
+      membership.collection_id,
+      (clipCounts.get(membership.collection_id) ?? 0) + 1,
+    );
     if (!coverPostIds.has(membership.collection_id)) {
       coverPostIds.set(membership.collection_id, membership.post_id);
     }
@@ -40,7 +47,11 @@ export async function fetchCollections(userId: string): Promise<Collection[]> {
 
   const postIds = [...new Set(coverPostIds.values())];
   if (postIds.length === 0) {
-    return collections.map((collection) => ({ ...collection, coverUrl: null }));
+    return collections.map((collection) => ({
+      ...collection,
+      coverUrl: null,
+      clipCount: 0,
+    }));
   }
 
   const { data: posts, error: postError } = await supabase
@@ -57,6 +68,7 @@ export async function fetchCollections(userId: string): Promise<Collection[]> {
   return collections.map((collection) => ({
     ...collection,
     coverUrl: coverUrls.get(coverPostIds.get(collection.id) ?? "") ?? null,
+    clipCount: clipCounts.get(collection.id) ?? 0,
   }));
 }
 

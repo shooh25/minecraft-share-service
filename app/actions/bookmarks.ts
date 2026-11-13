@@ -83,7 +83,7 @@ export async function createCollection(
   if (error) throw error;
 
   // コレクション一覧を表示する投稿詳細ページを次回表示時に更新する
-  t("/builds/[id]", "page");
+  revalidatePath("/builds/[id]", "page");
 
   return data;
 }

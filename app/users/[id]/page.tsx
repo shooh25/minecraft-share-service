@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { Pencil, User } from "lucide-react";
 import FollowButton from "@/components/follows/FollowButton";
 import ProfileLinks from "@/components/users/ProfileLinks";
+import UserCollections from "@/components/users/UserCollections";
 import UserPostsPanel from "@/components/users/UserPostsPanel";
 import { fetchCurrentUser } from "@/lib/auth";
+import { fetchCollections } from "@/lib/bookmarks";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
 import { fetchBuildsPage, fetchLikedBuildsPage } from "@/lib/posts";
 import { fetchProfile, isUserId } from "@/lib/users";
@@ -33,20 +35,35 @@ export default async function UserPage({
   const following =
     user && !isOwner ? await isFollowing(id, user.id) : false;
 
-  // 自分のページでは「いいね」タブも開ける
+  // 自分のページでは「いいね」「保存済み」タブも開ける
   const { tab: tabParam } = await searchParams;
-  const tab = isOwner && tabParam === "likes" ? "likes" : "posts";
+  const tab =
+    isOwner && tabParam === "likes"
+      ? "likes"
+      : isOwner && tabParam === "saved"
+        ? "saved"
+        : "posts";
 
   // 表示中のタブの1ページ目だけを取得する
   const page =
-    tab === "likes"
-      ? await fetchLikedBuildsPage({ userId: id })
-      : await fetchBuildsPage({ authorId: id, sortBy: "recent" });
+    tab === "saved"
+      ? null
+      : tab === "likes"
+        ? await fetchLikedBuildsPage({ userId: id })
+        : await fetchBuildsPage({ authorId: id, sortBy: "recent" });
+  const collections = tab === "saved" ? await fetchCollections(id) : [];
 
   const tabs = [
     { key: "posts", label: "投稿", href: `/users/${id}` },
     ...(isOwner
-      ? [{ key: "likes", label: "いいね", href: `/users/${id}?tab=likes` }]
+      ? [
+          { key: "likes", label: "いいね", href: `/users/${id}?tab=likes` },
+          {
+            key: "saved",
+            label: "保存済み",
+            href: `/users/${id}?tab=saved`,
+          },
+        ]
       : []),
   ];
 
@@ -148,13 +165,19 @@ export default async function UserPage({
       </div>
 
       {/* 投稿・いいね一覧 */}
-      <UserPostsPanel
-        key={tab}
-        userId={id}
-        tab={tab}
-        initialBuilds={page.builds}
-        initialNextCursor={page.nextCursor}
-      />
+      {tab === "saved" ? (
+        <UserCollections collections={collections} />
+      ) : (
+        page && (
+          <UserPostsPanel
+            key={tab}
+            userId={id}
+            tab={tab}
+            initialBuilds={page.builds}
+            initialNextCursor={page.nextCursor}
+          />
+        )
+      )}
     </div>
   );
 }

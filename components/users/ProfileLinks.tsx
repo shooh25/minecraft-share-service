@@ -8,7 +8,7 @@ interface ProfileLinksProps {
 }
 
 const linkClass =
-  "inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100";
+  "inline-flex h-9 w-9 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100";
 
 // プロフィールのX / ウェブサイト / YouTubeリンク
 export default function ProfileLinks({
