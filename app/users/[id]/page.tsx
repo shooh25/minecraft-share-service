@@ -8,9 +8,11 @@ import UserCollections from "@/components/users/UserCollections";
 import UserPostsPanel from "@/components/users/UserPostsPanel";
 import { fetchCurrentUser } from "@/lib/auth";
 import { fetchCollections } from "@/lib/bookmarks";
+import type { Collection } from "@/lib/bookmarks";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
 import { fetchBuildsPage, fetchLikedBuildsPage } from "@/lib/posts";
 import { fetchProfile, isUserId } from "@/lib/users";
+import type { BuildPage } from "@/types";
 
 export const instant = false;
 
@@ -35,37 +37,43 @@ export default async function UserPage({
   const following =
     user && !isOwner ? await isFollowing(id, user.id) : false;
 
-  // 自分のページでは「いいね」「保存済み」タブも開ける
+  // クエリパラメータからタブを決定する
   const { tab: tabParam } = await searchParams;
-  const tab =
-    isOwner && tabParam === "likes"
-      ? "likes"
-      : isOwner && tabParam === "saved"
-        ? "saved"
-        : "posts";
+  type Tab = "posts" | "likes" | "saved";
+  let tab: Tab = "posts";
+  
+  if (isOwner && tabParam === "likes") {
+    tab = "likes";
+  } else if (isOwner && tabParam === "saved") {
+    tab = "saved";
+  }
 
-  // 表示中のタブの1ページ目だけを取得する
-  const page =
-    tab === "saved"
-      ? null
-      : tab === "likes"
-        ? await fetchLikedBuildsPage({ userId: id })
-        : await fetchBuildsPage({ authorId: id, sortBy: "recent" });
-  const collections = tab === "saved" ? await fetchCollections(id) : [];
+  // 各タブ下に表示するデータを取得する
+  let buildPage: BuildPage | null = null;
+  let collections: Collection[] = [];
 
+  if (tab === "saved") {
+    collections = await fetchCollections(id);
+  } else if (tab === "likes") {
+    buildPage = await fetchLikedBuildsPage({ userId: id });
+  } else {
+    buildPage = await fetchBuildsPage({
+      authorId: id,
+      sortBy: "recent",
+    });
+  }
+
+  // タブ一覧を生成する
   const tabs = [
     { key: "posts", label: "投稿", href: `/users/${id}` },
-    ...(isOwner
-      ? [
-          { key: "likes", label: "いいね", href: `/users/${id}?tab=likes` },
-          {
-            key: "saved",
-            label: "保存済み",
-            href: `/users/${id}?tab=saved`,
-          },
-        ]
-      : []),
   ];
+
+  if (isOwner) {
+    tabs.push(
+      { key: "likes", label: "いいね", href: `/users/${id}?tab=likes` },
+      { key: "saved", label: "保存済み", href: `/users/${id}?tab=saved` },
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 lg:px-6">
@@ -168,13 +176,13 @@ export default async function UserPage({
       {tab === "saved" ? (
         <UserCollections collections={collections} />
       ) : (
-        page && (
+        buildPage && (
           <UserPostsPanel
             key={tab}
             userId={id}
             tab={tab}
-            initialBuilds={page.builds}
-            initialNextCursor={page.nextCursor}
+            initialBuilds={buildPage.builds}
+            initialNextCursor={buildPage.nextCursor}
           />
         )
       )}
