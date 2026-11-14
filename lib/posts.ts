@@ -177,6 +177,84 @@ export async function fetchLikedBuildsPage({
   };
 }
 
+// コレクション内の取得位置。形式は日時_投稿ID
+export function collectionClipCursorCondition(
+  value: string | null,
+): string | null {
+  const [createdAt, postId] = (value ?? "").split("_");
+  if (
+    !TIMESTAMP.test(createdAt) ||
+    Number.isNaN(Date.parse(createdAt)) ||
+    !UUID.test(postId)
+  ) {
+    return null;
+  }
+
+  return `created_at.lt.${createdAt},and(created_at.eq.${createdAt},post_id.lt.${postId})`;
+}
+
+// API が壊れたカーソルを先頭ページとして返さないようにする
+export const isValidCollectionClipCursor = (value: string | null) =>
+  collectionClipCursorCondition(value) !== null;
+
+// collection_clips と posts を結合して取得したときの1行分
+interface CollectionClipRow {
+  created_at: string;
+  post_id: string;
+}
+
+// コレクションに保存した日時の新しい順に、1ページ分の作品を取得する
+export async function fetchCollectionBuildsPage({
+  collectionId,
+  userId,
+  cursor = null,
+  limit = 12,
+}: {
+  collectionId: string;
+  userId: string;
+  cursor?: string | null;
+  limit?: number;
+}): Promise<BuildPage> {
+  const supabase = await createClient();
+  const condition = collectionClipCursorCondition(cursor);
+
+  let request = supabase
+    .from("collection_clips")
+    .select("created_at, post_id")
+    .eq("collection_id", collectionId)
+    .eq("user_id", userId);
+  if (condition) request = request.or(condition);
+
+  // 次ページがあるか知るために1件多く取る
+  const { data, error } = await request
+    .order("created_at", { ascending: false })
+    .order("post_id", { ascending: false })
+    .limit(limit + 1);
+  if (error) throw error;
+
+  const rows = (data ?? []) as CollectionClipRow[];
+  const pageRows = rows.slice(0, limit);
+  const last = pageRows[pageRows.length - 1];
+  if (!last) return { builds: [], nextCursor: null };
+
+  const { data: posts, error: postsError } = await supabase
+    .from("posts")
+    .select(SELECT_COLUMNS)
+    .in("id", pageRows.map((row) => row.post_id));
+  if (postsError) throw postsError;
+
+  // 取得結果は順序が保証されないため、collection_clips が返した順に並べ直す
+  const order = new Map(pageRows.map((row, index) => [row.post_id, index]));
+
+  return {
+    builds: ((posts ?? []) as unknown as PostRow[])
+      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+      .map(toBuild),
+    nextCursor:
+      rows.length > limit ? `${last.created_at}_${last.post_id}` : null,
+  };
+}
+
 // 投稿を1件取得する(見つからなければ null)
 export async function fetchBuild(id: string): Promise<Build | null> {
   const supabase = await createClient();

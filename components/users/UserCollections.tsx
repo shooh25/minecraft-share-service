@@ -1,14 +1,18 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Layers } from "lucide-react";
 import type { Collection } from "@/lib/bookmarks";
 
 interface UserCollectionsProps {
   collections: Collection[];
+  // コレクションの持ち主
+  userId: string;
 }
 
 // コレクション一覧
 export default function UserCollections({
   collections,
+  userId,
 }: UserCollectionsProps) {
   if (collections.length === 0) {
     return (
@@ -21,8 +25,11 @@ export default function UserCollections({
   return (
     <div className="grid grid-cols-4 gap-3 sm:gap-5">
       {collections.map((collection) => (
-        <div
+        <Link
           key={collection.id}
+          href={`/users/${userId}?tab=saved&collection=${collection.id}`}
+          prefetch={false}
+          aria-label={`${collection.name}の作品を見る`}
           className="min-w-0 overflow-hidden rounded-md bg-white"
         >
           <div className="relative aspect-square w-full overflow-hidden bg-zinc-200">
@@ -49,7 +56,7 @@ export default function UserCollections({
               {collection.clipCount}クリップ
             </p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

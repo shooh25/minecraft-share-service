@@ -1,16 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { Pencil, User } from "lucide-react";
 import FollowButton from "@/components/follows/FollowButton";
 import ProfileLinks from "@/components/users/ProfileLinks";
+import UserCollectionDetail from "@/components/users/UserCollectionDetail";
 import UserCollections from "@/components/users/UserCollections";
 import UserPostsPanel from "@/components/users/UserPostsPanel";
 import { fetchCurrentUser } from "@/lib/auth";
-import { fetchCollections } from "@/lib/bookmarks";
+import {
+  fetchCollection,
+  fetchCollections,
+  isCollectionId,
+} from "@/lib/bookmarks";
 import type { Collection } from "@/lib/bookmarks";
 import { fetchFollowCounts, isFollowing } from "@/lib/follows";
-import { fetchBuildsPage, fetchLikedBuildsPage } from "@/lib/posts";
+import {
+  fetchBuildsPage,
+  fetchCollectionBuildsPage,
+  fetchLikedBuildsPage,
+} from "@/lib/posts";
 import { fetchProfile, isUserId } from "@/lib/users";
 import type { BuildPage } from "@/types";
 
@@ -38,10 +48,10 @@ export default async function UserPage({
     user && !isOwner ? await isFollowing(id, user.id) : false;
 
   // クエリパラメータからタブを決定する
-  const { tab: tabParam } = await searchParams;
+  const { tab: tabParam, collection: collectionParam } = await searchParams;
   type Tab = "posts" | "likes" | "saved";
   let tab: Tab = "posts";
-  
+
   if (isOwner && tabParam === "likes") {
     tab = "likes";
   } else if (isOwner && tabParam === "saved") {
@@ -51,9 +61,29 @@ export default async function UserPage({
   // 各タブ下に表示するデータを取得する
   let buildPage: BuildPage | null = null;
   let collections: Collection[] = [];
+  let selectedCollection: Pick<Collection, "id" | "name"> | null = null;
 
   if (tab === "saved") {
-    collections = await fetchCollections(id);
+    const collectionId =
+      typeof collectionParam === "string" && isCollectionId(collectionParam)
+        ? collectionParam
+        : null;
+
+    // コレクションが指定されていれば、その中の作品一覧を取得する
+    if (collectionId) {
+      selectedCollection = await fetchCollection(collectionId, id);
+      if (selectedCollection) {
+        buildPage = await fetchCollectionBuildsPage({
+          collectionId: selectedCollection.id,
+          userId: id,
+        });
+      }
+    }
+
+    // コレクションが見つからないときは一覧を表示する
+    if (!selectedCollection) {
+      collections = await fetchCollections(id);
+    }
   } else if (tab === "likes") {
     buildPage = await fetchLikedBuildsPage({ userId: id });
   } else {
@@ -72,6 +102,36 @@ export default async function UserPage({
     tabs.push(
       { key: "likes", label: "いいね", href: `/users/${id}?tab=likes` },
       { key: "saved", label: "保存済み", href: `/users/${id}?tab=saved` },
+    );
+  }
+
+  // タブごとに表示する内容
+  let tabContent: ReactNode = null;
+
+  if (tab === "saved") {
+    // コレクションが選ばれていれば詳細、なければ一覧を表示する
+    tabContent =
+      selectedCollection && buildPage ? (
+        <UserCollectionDetail
+          key={selectedCollection.id}
+          userId={id}
+          collection={selectedCollection}
+          initialBuilds={buildPage.builds}
+          initialNextCursor={buildPage.nextCursor}
+        />
+      ) : (
+        <UserCollections collections={collections} userId={id} />
+      );
+  } else if (buildPage) {
+    // 投稿・いいね一覧
+    tabContent = (
+      <UserPostsPanel
+        key={tab}
+        userId={id}
+        tab={tab}
+        initialBuilds={buildPage.builds}
+        initialNextCursor={buildPage.nextCursor}
+      />
     );
   }
 
@@ -172,20 +232,8 @@ export default async function UserPage({
         </div>
       </div>
 
-      {/* 投稿・いいね一覧 */}
-      {tab === "saved" ? (
-        <UserCollections collections={collections} />
-      ) : (
-        buildPage && (
-          <UserPostsPanel
-            key={tab}
-            userId={id}
-            tab={tab}
-            initialBuilds={buildPage.builds}
-            initialNextCursor={buildPage.nextCursor}
-          />
-        )
-      )}
+      {/* タブの内容 */}
+      {tabContent}
     </div>
   );
 }

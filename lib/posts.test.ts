@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildPage,
+  collectionClipCursorCondition,
   cursorCondition,
   fetchBuildsPage,
+  isValidCollectionClipCursor,
   isValidCursor,
   isValidLikedCursor,
   likedCursorCondition,
@@ -192,6 +194,35 @@ describe("likedCursorCondition: いいね一覧のカーソル", () => {
   it("isValidLikedCursor は空を無効にする", () => {
     expect(isValidLikedCursor(null)).toBe(false);
     expect(isValidLikedCursor(`${CREATED_AT}_${ID}`)).toBe(true);
+  });
+});
+
+describe("collectionClipCursorCondition: コレクション内のカーソル", () => {
+  it("日時と投稿IDで条件を作る", () => {
+    expect(collectionClipCursorCondition(`${CREATED_AT}_${ID}`)).toBe(
+      `created_at.lt.${CREATED_AT},and(created_at.eq.${CREATED_AT},post_id.lt.${ID})`,
+    );
+  });
+
+  it("カーソルが無ければ条件を返さない", () => {
+    expect(collectionClipCursorCondition(null)).toBeNull();
+    expect(collectionClipCursorCondition("")).toBeNull();
+  });
+
+  it("壊れたカーソルは条件を返さない", () => {
+    for (const value of [
+      "broken",
+      CREATED_AT,
+      `not-a-date_${ID}`,
+      `${CREATED_AT}_not-a-uuid`,
+    ]) {
+      expect(collectionClipCursorCondition(value)).toBeNull();
+    }
+  });
+
+  it("isValidCollectionClipCursor は空を無効にする", () => {
+    expect(isValidCollectionClipCursor(null)).toBe(false);
+    expect(isValidCollectionClipCursor(`${CREATED_AT}_${ID}`)).toBe(true);
   });
 });
 

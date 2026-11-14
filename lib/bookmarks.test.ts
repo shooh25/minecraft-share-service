@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { createClient } from "@/lib/supabase/server";
-import { fetchCollections, fetchPostCollectionIds } from "@/lib/bookmarks";
+import {
+  fetchCollection,
+  fetchCollections,
+  fetchPostCollectionIds,
+  isCollectionId,
+} from "@/lib/bookmarks";
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
@@ -19,6 +24,7 @@ type FakeChain = {
   eq: () => FakeChain;
   order: () => FakeChain;
   in: () => FakeChain;
+  maybeSingle: () => Promise<FakeResult>;
   then: (
     resolve: (value: FakeResult) => unknown,
     reject?: (reason: unknown) => unknown,
@@ -34,6 +40,8 @@ function fakeClient(results: Record<string, FakeResult>) {
     eq: () => chain,
     order: () => chain,
     in: () => chain,
+    maybeSingle: () =>
+      Promise.resolve(results[table] ?? { data: null, error: null }),
     then: (resolve, reject) =>
       Promise.resolve(
         results[table] ?? { data: null, error: null },
@@ -130,6 +138,57 @@ describe("fetchCollections: コレクション一覧", () => {
     await expect(fetchCollections(USER_ID)).rejects.toEqual({
       message: "boom",
     });
+  });
+});
+
+describe("fetchCollection: コレクション1件", () => {
+  it("自分のコレクションを返す", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      fakeClient({
+        collections: {
+          data: { id: "collection-1", name: "保存した作品" },
+          error: null,
+        },
+      }) as never,
+    );
+
+    await expect(
+      fetchCollection("collection-1", USER_ID),
+    ).resolves.toEqual({ id: "collection-1", name: "保存した作品" });
+  });
+
+  it("見つからなければ null", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      fakeClient({
+        collections: { data: null, error: null },
+      }) as never,
+    );
+
+    await expect(
+      fetchCollection("collection-1", USER_ID),
+    ).resolves.toBeNull();
+  });
+
+  it("DBエラーはそのまま投げる", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      fakeClient({
+        collections: { data: null, error: { message: "boom" } },
+      }) as never,
+    );
+
+    await expect(fetchCollection("collection-1", USER_ID)).rejects.toEqual({
+      message: "boom",
+    });
+  });
+});
+
+describe("isCollectionId: コレクションIDの形式判定", () => {
+  it("UUIDなら true", () => {
+    expect(isCollectionId("3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6a7b")).toBe(true);
+  });
+
+  it("UUIDでなければ false", () => {
+    expect(isCollectionId("collection-1")).toBe(false);
   });
 });
 

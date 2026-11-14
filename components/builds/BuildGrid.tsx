@@ -12,7 +12,7 @@ export default function BuildGrid({
 }: BuildGridProps) {
   if (builds.length === 0) {
     return (
-      <div className="py-20 text-center text-base text-zinc-400">
+      <div className="py-20 text-center text-base text-zinc-500">
         {emptyMessage}
       </div>
     );

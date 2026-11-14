@@ -10,6 +10,31 @@ export interface Collection {
   clipCount: number;
 }
 
+const UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+
+// コレクションIDとして使える形式か
+export function isCollectionId(value: string): boolean {
+  return UUID.test(value);
+}
+
+// 自分のコレクションを1件取得する(見つからなければ null)
+export async function fetchCollection(
+  collectionId: string,
+  userId: string,
+): Promise<Pick<Collection, "id" | "name"> | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("collections")
+    .select("id, name")
+    .eq("id", collectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data;
+}
+
 // ユーザーのコレクション一覧
 export async function fetchCollections(userId: string): Promise<Collection[]> {
   const supabase = await createClient();
