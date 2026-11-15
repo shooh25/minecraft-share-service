@@ -9,7 +9,10 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
-import { deleteCollection } from "@/app/actions/bookmarks";
+import {
+  deleteCollection,
+  updateCollectionName,
+} from "@/app/actions/bookmarks";
 import InfiniteBuilds from "@/components/builds/InfiniteBuilds";
 import { useInfiniteBuilds } from "@/components/builds/useInfiniteBuilds";
 import { useDialogScrollLock } from "@/components/ui/useDialogScrollLock";
@@ -36,13 +39,22 @@ export default function UserCollectionDetail({
   initialNextCursor,
 }: UserCollectionDetailProps) {
   const router = useRouter();
+  const [name, setName] = useState(collection.name);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState(collection.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  useDialogScrollLock(deleteOpen);
+  useDialogScrollLock(editOpen || deleteOpen);
+
+  const closeEditDialog = () => {
+    if (isPending) return;
+
+    setEditOpen(false);
+  };
 
   const closeDeleteDialog = () => {
     if (isPending) return;
@@ -67,6 +79,29 @@ export default function UserCollectionDetail({
       document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [menuOpen]);
+
+  // コレクション名を保存する
+  const handleSaveName = () => {
+    if (isPending) return;
+
+    const trimmed = editName.trim();
+    if (trimmed.length === 0) return;
+
+    startTransition(async () => {
+      try {
+        const updated = await updateCollectionName(collection.id, trimmed);
+        if (!updated) {
+          window.alert("コレクション名を保存できませんでした");
+          return;
+        }
+
+        setName(updated);
+        setEditOpen(false);
+      } catch {
+        window.alert("コレクション名を保存できませんでした");
+      }
+    });
+  };
 
   // コレクションを削除して一覧に戻る
   const handleDelete = () => {
@@ -117,7 +152,7 @@ export default function UserCollectionDetail({
           <ChevronLeft className="h-5 w-5" strokeWidth={1.8} />
         </Link>
         <h2 className="min-w-0 flex-1 truncate text-xl font-bold text-zinc-900">
-          {collection.name}
+          {name}
         </h2>
 
         <div className="relative shrink-0">
@@ -143,14 +178,18 @@ export default function UserCollectionDetail({
               <button
                 type="button"
                 role="menuitem"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setEditName(name);
+                  setEditOpen(true);
+                }}
                 className="flex w-full cursor-pointer items-center gap-2 px-3 py-[13px] text-left text-sm leading-none text-zinc-900 transition-colors hover:bg-zinc-100"
               >
                 <Pencil
                   className="h-4 w-4 shrink-0 text-zinc-500"
                   aria-hidden="true"
                 />
-                コレクションを編集
+                コレクション名を編集
               </button>
               <button
                 type="button"
@@ -181,6 +220,69 @@ export default function UserCollectionDetail({
         sentinelRef={sentinelRef}
         emptyMessage="このコレクションにはまだ作品がありません"
       />
+
+      {/* コレクション名の編集ダイアログ */}
+      {editOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-zinc-950/40"
+            aria-hidden="true"
+            onClick={closeEditDialog}
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-collection-title"
+            className="relative w-full max-w-sm rounded-md border border-zinc-200 bg-white p-6 shadow-xl"
+          >
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSaveName();
+              }}
+            >
+              <h2
+                id="edit-collection-title"
+                className="text-lg font-bold text-zinc-900"
+              >
+                コレクション名を編集
+              </h2>
+
+              <label htmlFor="collection-name" className="sr-only">
+                コレクション名
+              </label>
+              <input
+                id="collection-name"
+                type="text"
+                value={editName}
+                onChange={(event) => setEditName(event.target.value)}
+                maxLength={50}
+                autoFocus
+                className="mt-4 h-11 w-full rounded-md px-3 text-sm text-zinc-900 outline-none transition focus:bg-zinc-200 bg-zinc-100"
+              />
+
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closeEditDialog}
+                  disabled={isPending}
+                  className="inline-flex h-10 cursor-pointer items-center justify-center border border-zinc-200 rounded-md px-5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending || editName.trim().length === 0}
+                  className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-sky-600 px-5 text-sm font-medium text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  保存
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* コレクション削除の確認ダイアログ */}
       {deleteOpen && (

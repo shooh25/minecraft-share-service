@@ -90,6 +90,40 @@ export async function deleteCollection(
   return true;
 }
 
+// コレクション名を変更する。成功したら新しい名前、未ログイン・対象なしなら null を返す。
+export async function updateCollectionName(
+  collectionId: string,
+  name: string,
+): Promise<string | null> {
+  // Server Action は直接 POST でも呼べるため、サーバー側でも認証を確認する
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+  if (!isCollectionId(collectionId)) return null;
+
+  // 前後の空白を除き、DBの制約(1〜50文字)に合わせて検証する
+  const trimmed = name.trim();
+  if (trimmed.length === 0 || trimmed.length > 50) return null;
+
+  const { data, error } = await supabase
+    .from("collections")
+    .update({ name: trimmed })
+    .eq("id", collectionId)
+    .eq("user_id", user.id)
+    .select("name")
+    .maybeSingle();
+  if (error) throw error;
+
+  // 自分のコレクションが見つからなければ失敗
+  if (!data) return null;
+
+  revalidatePath("/users/[id]", "page");
+  return data.name;
+}
+
 // コレクションを作成する。成功したら作成したコレクション、未ログインなら null を返す。
 export async function createCollection(
   name: string,
