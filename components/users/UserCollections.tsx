@@ -16,7 +16,7 @@ export default function UserCollections({
 }: UserCollectionsProps) {
   if (collections.length === 0) {
     return (
-      <div className="py-20 text-center text-base text-zinc-400">
+      <div className="py-20 text-center text-base text-zinc-500">
         コレクションがありません
       </div>
     );

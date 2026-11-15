@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 // フォロー・フォロー解除。成功したら true、未ログインや自分自身なら false を返す。
@@ -35,6 +36,9 @@ export async function setFollowing(
       .eq("followee_id", followeeId);
     if (error) throw error;
   }
+
+  revalidatePath("/users/[id]", "page");
+  revalidatePath("/builds/[id]", "page");
 
   return true;
 }

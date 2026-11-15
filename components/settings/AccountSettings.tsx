@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogOut, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 // アカウント設定
 export default function AccountSettings() {
-  const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
 
   // サインアウトしてトップへ戻る
@@ -18,8 +16,8 @@ export default function AccountSettings() {
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      router.push("/");
-      router.refresh();
+      // ログイン状態を残さず、トップを読み直す
+      window.location.replace("/");
     } catch {
       setSigningOut(false);
     }

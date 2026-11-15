@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { setFollowing as saveFollow } from "@/app/actions/follows";
 import LoginDialog from "@/components/auth/LoginDialog";
@@ -23,7 +23,7 @@ export default function FollowButton({
   loggedIn,
   variant = "default",
 }: FollowButtonProps) {
-  const [following, setFollowing] = useState(initialFollowing);
+  const [following, setFollowing] = useOptimistic(initialFollowing);
   const [loginOpen, setLoginOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -34,15 +34,14 @@ export default function FollowButton({
     }
 
     const next = !following;
-    // 先に表示を切り替え、失敗したら元に戻す
-    setFollowing(next);
 
     startTransition(async () => {
+      setFollowing(next);
+
       try {
-        const saved = await saveFollow(userId, next);
-        if (!saved) setFollowing(!next);
+        await saveFollow(userId, next);
       } catch {
-        setFollowing(!next);
+        // エラー時は元の値に戻る
       }
     });
   };

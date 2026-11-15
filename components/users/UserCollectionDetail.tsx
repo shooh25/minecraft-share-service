@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   MoreHorizontal,
@@ -38,7 +37,6 @@ export default function UserCollectionDetail({
   initialBuilds,
   initialNextCursor,
 }: UserCollectionDetailProps) {
-  const router = useRouter();
   const [name, setName] = useState(collection.name);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -116,8 +114,8 @@ export default function UserCollectionDetail({
         }
 
         setDeleteOpen(false);
-        // 一覧側でトーストを表示する
-        router.push(`/users/${userId}?tab=saved&deleted=1`);
+        // 画面の状態を残さず、一覧を最新の状態で読み直す
+        window.location.replace(`/users/${userId}?tab=saved&deleted=1`);
       } catch {
         window.alert("コレクションを削除できませんでした");
       }
