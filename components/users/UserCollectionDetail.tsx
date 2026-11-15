@@ -1,15 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   MoreHorizontal,
   Pencil,
   Trash2,
 } from "lucide-react";
+import { deleteCollection } from "@/app/actions/bookmarks";
 import InfiniteBuilds from "@/components/builds/InfiniteBuilds";
 import { useInfiniteBuilds } from "@/components/builds/useInfiniteBuilds";
+import { useDialogScrollLock } from "@/components/ui/useDialogScrollLock";
 import type { Build, BuildPage } from "@/types";
 
 interface UserCollectionDetailProps {
@@ -32,9 +35,20 @@ export default function UserCollectionDetail({
   initialBuilds,
   initialNextCursor,
 }: UserCollectionDetailProps) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useDialogScrollLock(deleteOpen);
+
+  const closeDeleteDialog = () => {
+    if (isPending) return;
+
+    setDeleteOpen(false);
+  };
 
   // メニューの外側をクリックしたら閉じる
   useEffect(() => {
@@ -53,6 +67,27 @@ export default function UserCollectionDetail({
       document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [menuOpen]);
+
+  // コレクションを削除して一覧に戻る
+  const handleDelete = () => {
+    if (isPending) return;
+
+    startTransition(async () => {
+      try {
+        const deleted = await deleteCollection(collection.id);
+        if (!deleted) {
+          window.alert("コレクションを削除できませんでした");
+          return;
+        }
+
+        setDeleteOpen(false);
+        // 一覧側でトーストを表示する
+        router.push(`/users/${userId}?tab=saved&deleted=1`);
+      } catch {
+        window.alert("コレクションを削除できませんでした");
+      }
+    });
+  };
 
   // カーソルから次のページを取得する
   const fetchPage = useCallback(
@@ -120,7 +155,10 @@ export default function UserCollectionDetail({
               <button
                 type="button"
                 role="menuitem"
-                onClick={() => setMenuOpen(false)}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setDeleteOpen(true);
+                }}
                 className="flex w-full cursor-pointer items-center gap-2 px-3 py-[13px] text-left text-sm leading-none text-red-500 transition-colors hover:bg-zinc-100"
               >
                 <Trash2
@@ -143,6 +181,50 @@ export default function UserCollectionDetail({
         sentinelRef={sentinelRef}
         emptyMessage="このコレクションにはまだ作品がありません"
       />
+
+      {/* コレクション削除の確認ダイアログ */}
+      {deleteOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-zinc-950/40"
+            aria-hidden="true"
+            onClick={closeDeleteDialog}
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-collection-title"
+            className="relative w-full max-w-sm rounded-md border border-zinc-200 bg-white p-6 shadow-xl"
+          >
+            <h2
+              id="delete-collection-title"
+              className="text-lg font-bold text-zinc-900"
+            >
+              コレクションを削除しますか？
+            </h2>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeDeleteDialog}
+                disabled={isPending}
+                className="inline-flex h-10 cursor-pointer items-center justify-center border border-zinc-200 rounded-md px-5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isPending}
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-red-600 px-5 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                削除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Pencil, User } from "lucide-react";
 import FollowButton from "@/components/follows/FollowButton";
+import CollectionDeletedToast from "@/components/users/CollectionDeletedToast";
 import ProfileLinks from "@/components/users/ProfileLinks";
 import UserCollectionDetail from "@/components/users/UserCollectionDetail";
 import UserCollections from "@/components/users/UserCollections";
@@ -48,7 +49,11 @@ export default async function UserPage({
     user && !isOwner ? await isFollowing(id, user.id) : false;
 
   // クエリパラメータからタブを決定する
-  const { tab: tabParam, collection: collectionParam } = await searchParams;
+  const {
+    tab: tabParam,
+    collection: collectionParam,
+    deleted: deletedParam,
+  } = await searchParams;
   type Tab = "posts" | "likes" | "saved";
   let tab: Tab = "posts";
 
@@ -120,7 +125,10 @@ export default async function UserPage({
           initialNextCursor={buildPage.nextCursor}
         />
       ) : (
-        <UserCollections collections={collections} userId={id} />
+        <>
+          <CollectionDeletedToast show={deletedParam === "1"} />
+          <UserCollections collections={collections} userId={id} />
+        </>
       );
   } else if (buildPage) {
     // 投稿・いいね一覧

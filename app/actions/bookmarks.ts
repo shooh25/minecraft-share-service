@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isCollectionId } from "@/lib/bookmarks";
 import { createClient } from "@/lib/supabase/server";
 
 // 投稿をコレクションへ保存する。成功したら true、未ログインなら false を返す。
@@ -56,6 +57,36 @@ export async function removePostFromCollection(
   if (error) throw error;
 
   revalidatePath(`/builds/${postId}`);
+  return true;
+}
+
+// コレクションを削除する。成功したら true、未ログイン・対象なしなら false を返す。
+export async function deleteCollection(
+  collectionId: string,
+): Promise<boolean> {
+  // Server Action は直接 POST でも呼べるため、サーバー側でも認証を確認する
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+  if (!isCollectionId(collectionId)) return false;
+
+  // 自分のコレクションだけを削除する
+  const { data, error } = await supabase
+    .from("collections")
+    .delete()
+    .eq("id", collectionId)
+    .eq("user_id", user.id)
+    .select("id");
+  if (error) throw error;
+
+  // 削除対象がなければ false
+  if (!data || data.length === 0) return false;
+
+  revalidatePath("/users/[id]", "page");
+  revalidatePath("/builds/[id]", "page");
   return true;
 }
 
