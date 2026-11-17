@@ -9,6 +9,8 @@ import type { Collection } from "@/lib/bookmarks";
 
 interface BookmarkButtonProps {
   postId: string;
+  // コレクションの持ち主。未ログインなら null
+  userId: string | null;
   // その投稿が保存されているコレクションのID達
   initialSavedCollectionIds: string[];
   // ログイン中のユーザーのコレクション
@@ -20,6 +22,7 @@ interface BookmarkButtonProps {
 // ブックマークボタン
 export default function BookmarkButton({
   postId,
+  userId,
   initialSavedCollectionIds,
   collections,
   loggedIn,
@@ -90,15 +93,18 @@ export default function BookmarkButton({
         />
       </button>
 
-      <CollectionPickerDialog
-        open={dialogOpen}
-        postId={postId}
-        collections={collectionList}
-        savedIds={savedIds}
-        onClose={closeDialog}
-        onSavedChange={handleSavedChange}
-        onCollectionCreated={handleCollectionCreated}
-      />
+      {userId && (
+        <CollectionPickerDialog
+          open={dialogOpen}
+          postId={postId}
+          userId={userId}
+          collections={collectionList}
+          savedIds={savedIds}
+          onClose={closeDialog}
+          onSavedChange={handleSavedChange}
+          onCollectionCreated={handleCollectionCreated}
+        />
+      )}
 
       <LoginDialog
         open={loginOpen}

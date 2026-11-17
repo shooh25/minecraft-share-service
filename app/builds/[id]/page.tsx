@@ -72,6 +72,7 @@ export default async function BuildDetailPage({
                 />
                 <BookmarkButton
                   postId={build.id}
+                  userId={user?.id ?? null}
                   initialSavedCollectionIds={savedCollectionIds}
                   collections={collections}
                   loggedIn={Boolean(user)}

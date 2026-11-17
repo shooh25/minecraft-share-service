@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Bookmark, Layers, Plus, X } from "lucide-react";
 import {
@@ -14,6 +15,8 @@ import type { Collection } from "@/lib/bookmarks";
 interface CollectionPickerDialogProps {
   open: boolean;
   postId: string;
+  // コレクションの持ち主
+  userId: string;
   // ログイン中のユーザーのコレクション
   collections: Collection[];
   // その投稿が保存されているコレクションのID
@@ -29,6 +32,7 @@ interface CollectionPickerDialogProps {
 export default function CollectionPickerDialog({
   open,
   postId,
+  userId,
   collections,
   savedIds,
   onClose,
@@ -182,25 +186,33 @@ export default function CollectionPickerDialog({
                         key={collection.id}
                         className="flex items-center gap-3 rounded-md"
                       >
-                        <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-zinc-100">
-                          {collection.coverUrl ? (
-                            <Image
-                              src={collection.coverUrl}
-                              alt=""
-                              fill
-                              sizes="60px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <span className="flex h-full w-full items-center justify-center text-zinc-400">
-                              <Layers className="h-4 w-4" />
-                            </span>
-                          )}
-                        </span>
+                        <Link
+                          href={`/users/${userId}?tab=saved&collection=${collection.id}`}
+                          prefetch={false}
+                          onClick={handleClose}
+                          aria-label={`${collection.name}の作品を見る`}
+                          className="flex min-w-0 flex-1 items-center gap-3"
+                        >
+                          <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-zinc-100">
+                            {collection.coverUrl ? (
+                              <Image
+                                src={collection.coverUrl}
+                                alt=""
+                                fill
+                                sizes="60px"
+                                className="object-cover"
+                              />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center text-zinc-400">
+                                <Layers className="h-4 w-4" />
+                              </span>
+                            )}
+                          </span>
 
-                        <span className="min-w-0 flex-1 truncate font-bold text-sm text-zinc-900">
-                          {collection.name}
-                        </span>
+                          <span className="min-w-0 flex-1 truncate font-bold text-sm text-zinc-900">
+                            {collection.name}
+                          </span>
+                        </Link>
                         <button
                           type="button"
                           onClick={() => handleToggle(collection.id, saved)}
