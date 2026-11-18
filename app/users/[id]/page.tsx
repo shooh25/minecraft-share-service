@@ -214,7 +214,6 @@ export default async function UserPage({
                   userId={id}
                   initialFollowing={following}
                   loggedIn={Boolean(user)}
-                  variant="soft"
                 />
               </div>
             )}

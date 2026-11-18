@@ -30,32 +30,29 @@ export default function UserCollections({
           href={`/users/${userId}?tab=saved&collection=${collection.id}`}
           prefetch={false}
           aria-label={`${collection.name}の作品を見る`}
-          className="min-w-0 overflow-hidden rounded-md bg-white"
+          className="relative aspect-square min-w-0 overflow-hidden rounded-md bg-zinc-200"
         >
-          <div className="relative aspect-square w-full overflow-hidden bg-zinc-200">
-            {collection.coverUrl ? (
-              <Image
-                src={collection.coverUrl}
-                alt=""
-                fill
-                sizes="(max-width: 640px) 25vw, 320px"
-                className="object-cover"
-              />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-zinc-400">
-                <Layers className="h-6 w-6" />
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-1 px-4 py-3">
-            <p className="truncate text-md font-bold text-zinc-900">
-              {collection.name}
-            </p>
-            <p className="text-sm text-zinc-500">
-              {collection.clipCount}クリップ
-            </p>
-          </div>
+          {collection.coverUrl ? (
+            <Image
+              src={collection.coverUrl}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 25vw, 320px"
+              className="object-cover"
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-zinc-400">
+              <Layers className="h-6 w-6" />
+            </span>
+          )}
+          <span
+            className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-zinc-950/70 to-transparent"
+            aria-hidden="true"
+          />
+          {/* コレクション名 */}
+          <span className="absolute inset-x-0 bottom-0 truncate px-3 pb-3 text-sm font-bold text-white">
+            {collection.name}
+          </span>
         </Link>
       ))}
     </div>

@@ -12,8 +12,6 @@ interface FollowButtonProps {
   initialFollowing: boolean;
   // ログインしているか
   loggedIn: boolean;
-  // フォロー中の見た目
-  variant?: "default" | "soft";
 }
 
 // フォローボタン。未ログイン時は押すとログインダイアログを開く。
@@ -21,7 +19,6 @@ export default function FollowButton({
   userId,
   initialFollowing,
   loggedIn,
-  variant = "default",
 }: FollowButtonProps) {
   const [following, setFollowing] = useOptimistic(initialFollowing);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -55,9 +52,7 @@ export default function FollowButton({
         aria-pressed={following}
         className={`inline-flex h-10 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md text-sm font-medium leading-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
           following
-            ? variant === "soft"
-              ? "bg-zinc-100 text-sky-600 border border-zinc-200 hover:bg-zinc-200"
-              : "bg-white text-sky-600 border border-zinc-200"
+            ? "bg-white text-sky-600 border border-zinc-200 hover:bg-zinc-100"
             : "bg-sky-600 text-white hover:bg-sky-700"
         }`}
       >
