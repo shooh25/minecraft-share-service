@@ -217,6 +217,7 @@ export default function UserCollectionDetail({
         onRetry={() => void loadMore()}
         sentinelRef={sentinelRef}
         emptyMessage="このコレクションにはまだ作品がありません"
+        showEditButton
       />
 
       {/* コレクション名の編集ダイアログ */}

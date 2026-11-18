@@ -4,11 +4,14 @@ import BuildCard from "./BuildCard";
 interface BuildGridProps {
   builds: Build[];
   emptyMessage?: string;
+  // ホバー時に編集ボタンを出すか
+  showEditButton?: boolean;
 }
 
 export default function BuildGrid({
   builds,
   emptyMessage = "作品がまだありません",
+  showEditButton = false,
 }: BuildGridProps) {
   if (builds.length === 0) {
     return (
@@ -21,7 +24,11 @@ export default function BuildGrid({
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 sm:gap-5">
       {builds.map((build) => (
-        <BuildCard key={build.id} build={build} />
+        <BuildCard
+          key={build.id}
+          build={build}
+          showEditButton={showEditButton}
+        />
       ))}
     </div>
   );

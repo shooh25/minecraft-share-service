@@ -15,6 +15,8 @@ interface InfiniteBuildsProps {
   // 一覧末尾の要素。ここが見えたら次を読み込む
   sentinelRef: RefObject<HTMLDivElement | null>;
   emptyMessage?: string;
+  // 各カードのホバー時に編集ボタンを出すか
+  showEditButton?: boolean;
 }
 
 // 無限スクロールする作品グリッド。useInfiniteBuilds と組み合わせて使う。
@@ -26,10 +28,15 @@ export default function InfiniteBuilds({
   onRetry,
   sentinelRef,
   emptyMessage,
+  showEditButton = false,
 }: InfiniteBuildsProps) {
   return (
     <>
-      <BuildGrid builds={builds} emptyMessage={emptyMessage} />
+      <BuildGrid
+        builds={builds}
+        emptyMessage={emptyMessage}
+        showEditButton={showEditButton}
+      />
 
       {/* ここが見えたら次のページを読み込む */}
       {hasMore && <div ref={sentinelRef} aria-hidden className="h-1" />}
