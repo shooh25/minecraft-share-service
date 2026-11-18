@@ -6,12 +6,15 @@ interface BuildGridProps {
   emptyMessage?: string;
   // ホバー時に編集ボタンを出すか
   showEditButton?: boolean;
+  // 編集ボタンを押したとき
+  onEdit?: (build: Build) => void;
 }
 
 export default function BuildGrid({
   builds,
   emptyMessage = "作品がまだありません",
   showEditButton = false,
+  onEdit,
 }: BuildGridProps) {
   if (builds.length === 0) {
     return (
@@ -28,6 +31,7 @@ export default function BuildGrid({
           key={build.id}
           build={build}
           showEditButton={showEditButton}
+          onEdit={onEdit}
         />
       ))}
     </div>

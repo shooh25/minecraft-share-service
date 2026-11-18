@@ -27,6 +27,11 @@ export function useInfiniteBuilds({
   // 一覧末尾の要素
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  // 一覧から作品を1件削除する
+  const removeBuild = useCallback((buildId: string) => {
+    setBuilds((current) => current.filter((build) => build.id !== buildId));
+  }, []);
+
   // 次のページを読み込んで末尾に足す
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingRef.current) return;
@@ -69,6 +74,7 @@ export function useInfiniteBuilds({
     loading,
     error,
     loadMore,
+    removeBuild,
     sentinelRef,
     hasMore: nextCursor !== null,
   };

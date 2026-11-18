@@ -17,6 +17,8 @@ interface InfiniteBuildsProps {
   emptyMessage?: string;
   // 各カードのホバー時に編集ボタンを出すか
   showEditButton?: boolean;
+  // 編集ボタンを押したとき
+  onEdit?: (build: Build) => void;
 }
 
 // 無限スクロールする作品グリッド。useInfiniteBuilds と組み合わせて使う。
@@ -29,6 +31,7 @@ export default function InfiniteBuilds({
   sentinelRef,
   emptyMessage,
   showEditButton = false,
+  onEdit,
 }: InfiniteBuildsProps) {
   return (
     <>
@@ -36,6 +39,7 @@ export default function InfiniteBuilds({
         builds={builds}
         emptyMessage={emptyMessage}
         showEditButton={showEditButton}
+        onEdit={onEdit}
       />
 
       {/* ここが見えたら次のページを読み込む */}

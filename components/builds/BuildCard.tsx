@@ -7,6 +7,8 @@ interface BuildCardProps {
   build: Build;
   // ホバー時に編集ボタンを出すか
   showEditButton?: boolean;
+  // 編集ボタンを押したとき
+  onEdit?: (build: Build) => void;
 }
 
 const ADVICE_TAG = "アドバイス求む!";
@@ -14,6 +16,7 @@ const ADVICE_TAG = "アドバイス求む!";
 export default function BuildCard({
   build,
   showEditButton = false,
+  onEdit,
 }: BuildCardProps) {
   return (
     <div className="group relative">
@@ -89,7 +92,8 @@ export default function BuildCard({
       {showEditButton && (
         <button
           type="button"
-          aria-label="作品を編集"
+          aria-label="作品を保存するコレクションを選ぶ"
+          onClick={() => onEdit?.(build)}
           className="pointer-events-none absolute right-2 top-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-white/90 text-zinc-600 opacity-0 shadow-sm transition hover:bg-white hover:text-zinc-900 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
         >
           <Pencil className="h-4 w-4" strokeWidth={1.8} />

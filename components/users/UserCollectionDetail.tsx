@@ -10,11 +10,15 @@ import {
 } from "lucide-react";
 import {
   deleteCollection,
+  fetchCollectionPickerData,
   updateCollectionName,
 } from "@/app/actions/bookmarks";
+import CollectionPickerDialog from "@/components/builds/CollectionPickerDialog";
 import InfiniteBuilds from "@/components/builds/InfiniteBuilds";
 import { useInfiniteBuilds } from "@/components/builds/useInfiniteBuilds";
+import Toast from "@/components/ui/Toast";
 import { useDialogScrollLock } from "@/components/ui/useDialogScrollLock";
+import type { Collection } from "@/lib/bookmarks";
 import type { Build, BuildPage } from "@/types";
 
 interface UserCollectionDetailProps {
@@ -42,6 +46,12 @@ export default function UserCollectionDetail({
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState(collection.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  // 編集中の投稿と、コレクション選択ダイアログに表示する内容
+  const [pickerPostId, setPickerPostId] = useState<string | null>(null);
+  const [pickerCollections, setPickerCollections] = useState<Collection[]>([]);
+  const [pickerSavedIds, setPickerSavedIds] = useState<string[]>([]);
+  const [pickerPending, startPickerTransition] = useTransition();
+  const [toast, setToast] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -135,8 +145,66 @@ export default function UserCollectionDetail({
     [collection.id],
   );
 
-  const { builds, loading, error, loadMore, sentinelRef, hasMore } =
-    useInfiniteBuilds({ initialBuilds, initialNextCursor, fetchPage });
+  const {
+    builds,
+    loading,
+    error,
+    loadMore,
+    removeBuild,
+    sentinelRef,
+    hasMore,
+  } = useInfiniteBuilds({ initialBuilds, initialNextCursor, fetchPage });
+
+  // 編集ダイアログを開く
+  const handleEditBuild = (build: Build) => {
+    if (pickerPending) return;
+
+    startPickerTransition(async () => {
+      try {
+        const data = await fetchCollectionPickerData(build.id);
+        if (!data) {
+          window.alert("コレクションを取得できませんでした");
+          return;
+        }
+
+        setPickerCollections(data.collections);
+        setPickerSavedIds(data.savedIds);
+        setPickerPostId(build.id);
+      } catch {
+        window.alert("コレクションを取得できませんでした");
+      }
+    });
+  };
+
+  const closeCollectionPicker = () => {
+    // このコレクションから外したまま閉じたら、一覧からも取り除く
+    if (pickerPostId && !pickerSavedIds.includes(collection.id)) {
+      removeBuild(pickerPostId);
+    }
+
+    setPickerPostId(null);
+  };
+
+  const handlePickerSavedChange = (collectionId: string, saved: boolean) => {
+    setPickerSavedIds((prev) => {
+      if (saved) {
+        return prev.includes(collectionId) ? prev : [...prev, collectionId];
+      }
+
+      return prev.filter((id) => id !== collectionId);
+    });
+
+    setToast(
+      saved ? "コレクションに保存しました" : "コレクションから削除しました",
+    );
+  };
+
+  const handlePickerCollectionCreated = (created: Collection) => {
+    setPickerCollections((prev) =>
+      prev.some((item) => item.id === created.id) ? prev : [...prev, created],
+    );
+    setToast("コレクションを作成しました");
+  };
 
   return (
     <div className="space-y-4">
@@ -218,6 +286,7 @@ export default function UserCollectionDetail({
         sentinelRef={sentinelRef}
         emptyMessage="このコレクションにはまだ作品がありません"
         showEditButton
+        onEdit={handleEditBuild}
       />
 
       {/* コレクション名の編集ダイアログ */}
@@ -326,6 +395,22 @@ export default function UserCollectionDetail({
           </div>
         </div>
       )}
+
+      {/* 投稿をほかのコレクションへ保存するダイアログ */}
+      {pickerPostId && (
+        <CollectionPickerDialog
+          open
+          postId={pickerPostId}
+          userId={userId}
+          collections={pickerCollections}
+          savedIds={pickerSavedIds}
+          onClose={closeCollectionPicker}
+          onSavedChange={handlePickerSavedChange}
+          onCollectionCreated={handlePickerCollectionCreated}
+        />
+      )}
+
+      <Toast message={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

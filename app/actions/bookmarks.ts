@@ -1,7 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isCollectionId } from "@/lib/bookmarks";
+import {
+  fetchCollections,
+  fetchPostCollectionIds,
+  isCollectionId,
+  type Collection,
+} from "@/lib/bookmarks";
 import { createClient } from "@/lib/supabase/server";
 
 // 投稿をコレクションへ保存する。成功したら true、未ログインなら false を返す。
@@ -151,4 +156,25 @@ export async function createCollection(
   revalidatePath("/builds/[id]", "page");
 
   return data;
+}
+
+// コレクション選択ダイアログに表示する、自分のコレクションと保存済みのID。
+// 未ログインなら null を返す。
+export async function fetchCollectionPickerData(postId: string): Promise<{
+  collections: Collection[];
+  savedIds: string[];
+} | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const [collections, savedIds] = await Promise.all([
+    fetchCollections(user.id),
+    fetchPostCollectionIds(postId, user.id),
+  ]);
+
+  return { collections, savedIds };
 }
