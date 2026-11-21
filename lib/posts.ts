@@ -1,3 +1,4 @@
+import { imageUrl } from "@/lib/r2";
 import { createClient } from "@/lib/supabase/server";
 import type { SortBy } from "@/lib/build-filters";
 import type { Build, BuildPage } from "@/types";
@@ -33,7 +34,7 @@ export function toBuild(row: PostRow): Build {
   return {
     id: row.id,
     description: row.description,
-    images: row.images,
+    images: row.images.map(imageUrl),
     author: {
       id: row.author_id,
       nickname,
@@ -383,5 +384,8 @@ export async function fetchAuthorPosts(
     .limit(limit);
   if (error) throw error;
 
-  return (data ?? []) as AuthorPost[];
+  return (data ?? []).map((post) => ({
+    ...post,
+    images: post.images.map(imageUrl),
+  }));
 }

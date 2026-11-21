@@ -58,6 +58,8 @@ function fakeClient(results: Record<string, FakeResult>) {
 
 describe("fetchCollections: コレクション一覧", () => {
   it("取得したコレクションを返す", async () => {
+    vi.stubEnv("R2_PUBLIC_URL", "https://images.example.com");
+
     vi.mocked(createClient).mockResolvedValue(
       fakeClient({
         collections: {
@@ -75,11 +77,11 @@ describe("fetchCollections: コレクション一覧", () => {
           data: [
             {
               id: "post-1",
-              images: ["https://example.com/cover.jpg"],
+              images: ["posts/user-1/cover.jpg"],
             },
             {
               id: "post-2",
-              images: ["https://example.com/second.jpg"],
+              images: ["posts/user-1/second.jpg"],
             },
           ],
           error: null,
@@ -91,7 +93,7 @@ describe("fetchCollections: コレクション一覧", () => {
       {
         id: "collection-1",
         name: "保存した作品",
-        coverUrl: "https://example.com/cover.jpg",
+        coverUrl: "https://images.example.com/posts/user-1/cover.jpg",
         clipCount: 2,
       },
     ]);

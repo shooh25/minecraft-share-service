@@ -1,3 +1,4 @@
+import { imageUrl } from "@/lib/r2";
 import { createClient } from "@/lib/supabase/server";
 
 // ユーザーが作成したコレクション
@@ -87,7 +88,10 @@ export async function fetchCollections(userId: string): Promise<Collection[]> {
   if (postError) throw postError;
 
   const coverUrls = new Map(
-    (posts ?? []).map((post) => [post.id, post.images[0] ?? null]),
+    (posts ?? []).map((post) => [
+      post.id,
+      post.images[0] ? imageUrl(post.images[0]) : null,
+    ]),
   );
 
   return collections.map((collection) => ({

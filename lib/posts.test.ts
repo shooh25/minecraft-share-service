@@ -71,10 +71,12 @@ function makeRow(overrides: Partial<PostRow> = {}): PostRow {
 
 describe("toBuild: DBの行を作品に変換", () => {
   it("各項目を作品の形に詰め替える", () => {
+    vi.stubEnv("R2_PUBLIC_URL", "https://images.example.com");
+
     expect(toBuild(makeRow())).toEqual({
       id: ID,
       description: "石の家",
-      images: ["a.png"],
+      images: ["https://images.example.com/a.png"],
       author: {
         id: "u1",
         nickname: "Steve",
